@@ -11,6 +11,7 @@ import java.math._
 
 import net.liftweb.common._
 
+import java.nio.charset.StandardCharsets
 import scala.xml._
 
 object CryptoTester extends Logger {
@@ -226,16 +227,16 @@ class Crypto(cipherName: String = "AES",
   val encoding = "UTF8"
 
   def encryptCred(plainText: String): String = {
-    val b64Encoder = new sun.misc.BASE64Encoder()
-    b64Encoder.encode(encryptCred(plainText.getBytes))
+    val b64Encoder = java.util.Base64.getMimeEncoder()
+    new String(b64Encoder.encode(encryptCred(plainText.getBytes)),StandardCharsets.UTF_8)
   }
   def encryptCred(plainText: Array[Byte]): Array[Byte] =
     Stopwatch.time("Crypto.encryptCred", {
       ecipher.doFinal(plainText)
     })
   def decryptCred(encryptedText: String): String = {
-    val b64Encoder = new sun.misc.BASE64Decoder()
-    new String(decryptCred(b64Encoder.decodeBuffer(encryptedText)))
+    val b64Encoder = java.util.Base64.getMimeDecoder()
+    new String(decryptCred(b64Encoder.decode(encryptedText)),StandardCharsets.UTF_8)
   }
   def decryptCred(encryptedText: Array[Byte]): Array[Byte] =
     Stopwatch.time("Crypto.decryptCred", {
@@ -249,9 +250,9 @@ class Crypto(cipherName: String = "AES",
       "Crypto.getXmlPublicKey", {
         privateKey
           .map(pk => {
-            val b64Encoder = new sun.misc.BASE64Encoder()
+            val b64Encoder = java.util.Base64.getMimeEncoder()
             val privKey = pk.asInstanceOf[RSAPrivateCrtKey]
-            val wrap = (i: BigInteger) => b64Encoder.encode(i.toByteArray)
+            val wrap = (i: BigInteger) => new String(b64Encoder.encode(i.toByteArray),StandardCharsets.UTF_8)
             val keySpec = KeyFactory
               .getInstance(cipherName)
               .getKeySpec(privKey, classOf[RSAPrivateCrtKeySpec])
@@ -267,9 +268,9 @@ class Crypto(cipherName: String = "AES",
       "Crypto.getXmlPrivateKey", {
         privateKey
           .map(pk => {
-            val b64Encoder = new sun.misc.BASE64Encoder()
+            val b64Encoder = java.util.Base64.getMimeEncoder()
             val privKey = pk.asInstanceOf[RSAPrivateCrtKey]
-            val wrap = (i: BigInteger) => b64Encoder.encode(i.toByteArray)
+            val wrap = (i: BigInteger) => new String(b64Encoder.encode(i.toByteArray),StandardCharsets.UTF_8)
             val keySpec = KeyFactory
               .getInstance(cipherName)
               .getKeySpec(privKey, classOf[RSAPrivateCrtKeySpec])
@@ -292,8 +293,8 @@ class Crypto(cipherName: String = "AES",
         key
           .map(k => {
             val internalKeyBytes = k.asInstanceOf[java.security.Key].getEncoded
-            val b64Encoder = new sun.misc.BASE64Encoder()
-            val internalKey = b64Encoder.encode(internalKeyBytes)
+            val b64Encoder = java.util.Base64.getMimeEncoder()
+            val internalKey = new String(b64Encoder.encode(internalKeyBytes),StandardCharsets.UTF_8)
             <KeyPair><Key>{internalKey}</Key></KeyPair>
           })
           .getOrElse(<NoKey/>)
@@ -304,13 +305,14 @@ class Crypto(cipherName: String = "AES",
       "Crypto.getXmlKeyAndIv", {
         key
           .map(k => {
-            val b64Encoder = new sun.misc.BASE64Encoder()
+            val b64Encoder = java.util.Base64.getMimeEncoder()
             val internalKey =
-              b64Encoder.encode(k.asInstanceOf[java.security.Key].getEncoded)
+              new String(b64Encoder.encode(k.asInstanceOf[java.security.Key].getEncoded),StandardCharsets.UTF_8)
             val internalIv = iv
               .map(i =>
-                b64Encoder.encode(
-                  i.asInstanceOf[javax.crypto.spec.IvParameterSpec].getIV))
+                new String(b64Encoder.encode(
+                  i.asInstanceOf[javax.crypto.spec.IvParameterSpec].getIV),StandardCharsets.UTF_8)
+              )
               .getOrElse("")
             <KeyPair><Key>{internalKey}</Key><Iv>{internalIv}</Iv></KeyPair>
           })

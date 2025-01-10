@@ -4,7 +4,11 @@ git.useGitDescribe := true
 
 name := "app.stackableregiments.quacker"
 version in ThisBuild := "develop"
-scalaVersion in ThisBuild := "2.12.8"
+scalaVersion in ThisBuild := "2.12.15"
+
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
+ThisBuild / evictionErrorLevel                               := Level.Info
 
 organization := "stackableRegiments"
 
@@ -31,12 +35,7 @@ lazy val root = (project in file("."))
     buildInfoPackage := "code.buildInfo"
   )
 
-scalafmtOnCompile in ThisBuild := false
-scalafmtShowDiff in ThisBuild := false
-
-scapegoatVersion in ThisBuild := "1.3.11"
-
-clippyColorsEnabled := true
+ThisBuild / scalafmtOnCompile := false
 
 reporterConfig := reporterConfig.value.withColumnNumbers(true)
 
@@ -79,16 +78,18 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("snapshots"),
   "maven" at "https://mvnrepository.com/artifact/",
   "IHTSDO" at "https://maven.ihtsdotools.org/content/repositories/releases/",
-  "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-  "releases" at "http://oss.sonatype.org/content/repositories/releases",
-  "mavenCentral" at "http://mvnrepository.com/artifact"
+  "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+  "releases" at "https://oss.sonatype.org/content/repositories/releases",
+  "mavenCentral" at "https://mvnrepository.com/artifact"
 )
+
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
 
 libraryDependencies in ThisBuild ++= {
-  val liftVersion = "3.4.0"
+  val liftVersion = "3.4.3"
   val shiroVersion = "1.2.2"
+  val scalaTestVersion = "3.3.0-SNAP4"
 
   Seq(
     "net.liftweb" %% "lift-webkit" % liftVersion,
@@ -115,8 +116,11 @@ libraryDependencies in ThisBuild ++= {
     //for resource loading
     "org.springframework" % "spring-core" % "5.1.5.RELEASE",
     //for testing
-    "org.scalatest" %% "scalatest" % "3.2.0-SNAP10" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.14.2" % Test,
+    "org.specs2"     %% "specs2-core"              % "3.9.5"          % Test,
+    "org.scalatest"  %% "scalatest"                % scalaTestVersion % Test,
+    "org.scalatest"  %% "scalatest-shouldmatchers" % scalaTestVersion % Test,
+    "org.scalatest"  %% "scalatest-app"            % scalaTestVersion % Test,
+    "org.scalacheck" %% "scalacheck"               % "1.14.3"         % Test,
     // for ssh
     "com.jcraft" % "jsch" % "0.1.55",
     // for JWT encoding/decoding
@@ -251,6 +255,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 // set Ivy logging to be at the highest level
 ivyLoggingLevel := UpdateLogging.Full
+
 
 // disable updating dynamic revisions (including -SNAPSHOT versions)
 offline := false
