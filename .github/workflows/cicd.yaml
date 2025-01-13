@@ -83,7 +83,7 @@ jobs:
       - name: Login to Artifact Registry
         uses: docker/login-action@v1
         with:
-          registry: australia-southeast2-docker.pkg.dev
+          registry: us-central1-docker.pkg.dev
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
       - id: docker-push-tagged
@@ -96,5 +96,5 @@ jobs:
           labels: |
             ihub
           tags: |
-            australia-southeast2-docker.pkg.dev/flowpoc-386401/quacker-releases/ihub:${{ steps.get-tag.outputs.long_ref }}
-            australia-southeast2-docker.pkg.dev/flowpoc-386401/quacker-releases/ihub:latest
+            us-central1-docker.pkg.dev/flowpoc-386401/quacker-releases/quacker:${{ steps.get-tag.outputs.long_ref }}
+            us-central1-docker.pkg.dev/flowpoc-386401/quacker-releases/quacker:latest
