@@ -6,6 +6,8 @@ name := "app.stackableregiments.quacker"
 version in ThisBuild := "develop"
 scalaVersion in ThisBuild := "2.12.15"
 
+val jettyVersion               = "11.0.23"
+
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
 ThisBuild / evictionErrorLevel                               := Level.Info
@@ -83,6 +85,35 @@ resolvers in ThisBuild ++= Seq(
   "mavenCentral" at "https://mvnrepository.com/artifact"
 )
 
+enablePlugins(JettyPlugin)
+
+containerArgs := Seq("--config", "jetty.xml")
+containerPort := 8444
+
+val jettyMem  = sys.env.get("SBT_JETTY_MEM").getOrElse("2048")
+val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
+
+Jetty / javaOptions ++= Seq(
+  "-Xmx%sM".format(jettyMem),
+  "-Xms%sM".format(jettyMem),
+  "-XX:ActiveProcessorCount=%s".format(jettyCpus),
+  "--add-opens",
+  "java.base/java.net=ALL-UNNAMED",
+  "--add-opens",
+  "java.base/java.lang=ALL-UNNAMED",
+  "--add-opens",
+  "java.base/java.time=ALL-UNNAMED",
+  "--add-opens",
+  "java.base/java.lang.invoke=ALL-UNNAMED",
+  "--add-opens",
+  "java.base/java.util=ALL-UNNAMED",
+  "-Djavax.net.ssl.keyStore=keystore.jks",
+  "-Djavax.net.ssl.keyStorePassword=changeit",
+  "-Dorg.eclipse.jetty.util.log.class=org.apache.logging.log4j.appserver.jetty.Log4j2Logger",
+  """-Dlog4j.configurationFile=src/main/resources/log4j2.xml"""
+)
+
+Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
 
@@ -104,7 +135,9 @@ libraryDependencies in ThisBuild ++= {
     "com.softwaremill.sttp" %% "okhttp-backend" % "1.5.11",
     "org.ekrich" %% "sconfig" % "0.8.0",
     "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided",
-    "org.eclipse.jetty" % "jetty-webapp" % "9.4.11.v20180605",
+    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
+    "org.eclipse.jetty" % "jetty-server" % jettyVersion,
+    "org.eclipse.jetty" % "jetty-util"   % jettyVersion,
 //    "net.rcarz" % "jira-client" % "0.6.3-IHTSDO",
     "javax.mail" % "javax.mail-api" % "1.6.2",
     "com.sun.mail" % "javax.mail" % "1.6.2",
