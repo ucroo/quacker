@@ -63,7 +63,7 @@ object Servers extends ConfigFileReader {
               .flatten
               .toList
             newChecksList = newChecksList ::: serviceChecks
-            ServerDefinition(serverName, serviceName, serviceChecks)
+            ServerDefinition(serverName, serviceName, serviceChecks ::: services.find(_.name == serviceName).flatMap(_.servers.find(_.name == serverName)).map(_.checks.filterNot(c => serviceChecks.exists(sc => sc.label == c.label))).getOrElse(Nil))
           })
           .toList
         newServersList = newServersList ::: newServers
