@@ -67,7 +67,7 @@ object Servers extends ConfigFileReader {
           })
           .toList
         newServersList = newServersList ::: newServers
-        val newService = ServiceDefinition(serviceName, newServers)
+        val newService = ServiceDefinition(serviceName, services.find(_.name == serviceName).map(_.servers.filterNot(s => newServers.map(_.name).contains(s.name))).getOrElse(Nil) ::: newServers)
         newServicesList = newServicesList ::: List(newService)
         services = services.filterNot(s => s.name == serviceName) ::: List(
           newService)
