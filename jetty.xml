@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+  <!-- from etc/jetty.xml -->
+
+  <Get name="ThreadPool">
+    <Set name="minThreads" type="int"><Property name="threads.min" default="10"/></Set>
+    <Set name="maxThreads" type="int"><Property name="threads.max" default="200"/></Set>
+    <Set name="idleTimeout" type="int"><Property name="threads.timeout" default="60000"/></Set>
+    <Set name="detailedDump">false</Set>
+  </Get>
+
+  <Call name="addBean">
+    <Arg>
+      <New class="org.eclipse.jetty.util.thread.ScheduledExecutorScheduler"/>
+    </Arg>
+  </Call>
+
+  <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Set name="secureScheme">https</Set>
+    <Set name="securePort"><Property name="jetty.secure.port" default="8444" /></Set>
+    <Set name="outputBufferSize"><Property name="jetty.output.buffer.size" default="32768" /></Set>
+    <Set name="requestHeaderSize"><Property name="jetty.request.header.size" default="8192" /></Set>
+    <Set name="responseHeaderSize"><Property name="jetty.response.header.size" default="8192" /></Set>
+    <Set name="sendServerVersion"><Property name="jetty.send.server.version" default="true" /></Set>
+    <Set name="sendDateHeader"><Property name="jetty.send.date.header" default="false" /></Set>
+    <Set name="headerCacheSize">512</Set>
+
+    <Call name="addCustomizer">
+        <Arg><New class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
+    </Call>
+  </New>
+
+
+  <Set name="handler">
+    <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+      <Set name="handlers">
+        <Array type="org.eclipse.jetty.server.Handler">
+          <Item>
+            <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+          </Item>
+          <Item>
+            <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
+          </Item>
+        </Array>
+      </Set>
+    </New>
+  </Set>
+
+  <Set name="stopAtShutdown">true</Set>
+  <Set name="stopTimeout">5000</Set>
+  <Set name="dumpAfterStart"><Property name="jetty.dump.start" default="false"/></Set>
+  <Set name="dumpBeforeStop"><Property name="jetty.dump.stop" default="false"/></Set>
+
+  <!-- from etc/jetty-ssl.xml -->
+
+	<New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
+		<Set name="Provider" property="jetty.sslContext.provider" />
+		<Set name="KeyStorePath">
+				<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.sslContext.keyStoreAbsolutePath,jetty.keystore" default="./keystore.jks" />
+		</Set>
+		<Set name="KeyStorePassword"><Property name="jetty.sslContext.keyStorePassword" /></Set>
+		<Set name="KeyStoreType" property="jetty.sslContext.keyStoreType" />
+		<Set name="KeyStoreProvider" property="jetty.sslContext.keyStoreProvider" />
+		<Set name="KeyManagerPassword"><Property name="jetty.sslContext.keyManagerPassword" default="changeit" /></Set>
+		<Set name="TrustStorePath">
+				<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.sslContext.trustStoreAbsolutePath,jetty.truststore" default="./keystore.jks"/>
+		</Set>
+		<Set name="TrustStorePassword"><Property name="jetty.sslContext.trustStorePassword" default="changeit" /></Set>
+		<Set name="TrustStoreType" property="jetty.sslContext.trustStoreType" />
+		<Set name="TrustStoreProvider" property="jetty.sslContext.trustStoreProvider" />
+		<Set name="EndpointIdentificationAlgorithm" property="jetty.sslContext.endpointIdentificationAlgorithm" />
+		<Set name="NeedClientAuth" property="jetty.sslContext.needClientAuth" />
+		<Set name="WantClientAuth" property="jetty.sslContext.wantClientAuth" />
+		<Set name="useCipherSuitesOrder" property="jetty.sslContext.useCipherSuitesOrder" />
+		<Set name="sslSessionCacheSize" property="jetty.sslContext.sslSessionCacheSize" />
+		<Set name="sslSessionTimeout" property="jetty.sslContext.sslSessionTimeout" />
+		<Set name="RenegotiationAllowed" property="jetty.sslContext.renegotiationAllowed" />
+		<Set name="RenegotiationLimit" property="jetty.sslContext.renegotiationLimit" />
+		<Set name="SniRequired" property="jetty.sslContext.sniRequired" />
+
+		<!-- Example of how to configure a PKIX Certificate Path revocation Checker
+		<Call id="pkixPreferCrls" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>PREFER_CRLS</Arg></Call>
+		<Call id="pkixSoftFail" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>SOFT_FAIL</Arg></Call>
+		<Call id="pkixNoFallback" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>NO_FALLBACK</Arg></Call>
+		<Call class="java.security.cert.CertPathBuilder" name="getInstance">
+			<Arg>PKIX</Arg>
+			<Call id="pkixRevocationChecker" name="getRevocationChecker">
+				<Call name="setOptions">
+					<Arg>
+						<Call class="java.util.EnumSet" name="of">
+							<Arg><Ref refid="pkixPreferCrls"/></Arg>
+							<Arg><Ref refid="pkixSoftFail"/></Arg>
+							<Arg><Ref refid="pkixNoFallback"/></Arg>
+						</Call>
+					</Arg>
+				</Call>
+			</Call>
+		</Call>
+		<Set name="PkixCertPathChecker"><Ref refid="pkixRevocationChecker"/></Set>
+		-->
+	</New>
+
+  <New id="sslHttpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Arg><Ref refid="httpConfig"/></Arg>
+    <Call name="addCustomizer">
+      <Arg><New class="org.eclipse.jetty.server.SecureRequestCustomizer">
+				<Set name="SniHostCheck">false</Set>
+			</New></Arg>
+    </Call>
+  </New>
+
+  <!-- from etc/jetty-https.xml -->
+
+  <Call  name="addConnector">
+    <Arg>
+      <New id="sslConnector" class="org.eclipse.jetty.server.ServerConnector">
+        <Arg name="server"><Ref refid="Server" /></Arg>
+        <Arg name="acceptors" type="int"><Property name="jetty.ssl.acceptors" default="1"/></Arg>
+        <Arg name="selectors" type="int"><Property name="jetty.ssl.selectors" default="-1"/></Arg>
+        <Arg name="factories">
+          <Array type="org.eclipse.jetty.server.ConnectionFactory">
+            <Item>
+              <New class="org.eclipse.jetty.server.SslConnectionFactory">
+                <Arg name="next">http/1.1</Arg>
+                <Arg name="sslContextFactory"><Ref refid="sslContextFactory"/></Arg>
+              </New>
+            </Item>
+            <Item>
+              <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                <Arg name="config"><Ref refid="sslHttpConfig"/></Arg>
+              </New>
+            </Item>
+          </Array>
+        </Arg>
+        <Set name="host"><Property name="jetty.host" /></Set>
+        <Set name="port"><Property name="https.port" default="8444" /></Set>
+        <Set name="idleTimeout"><Property name="jetty.ssl.idleTimeout" default="30000"/></Set>
+        <Set name="acceptorPriorityDelta" property="jetty.ssl.acceptorPriorityDelta"/>
+        <Set name="acceptQueueSize" property="jetty.ssl.acceptQueueSize"/>
+        <Set name="reuseAddress"><Property name="jetty.ssl.reuseAddress" default="true"/></Set>
+        <Set name="acceptedTcpNoDelay"><Property name="jetty.ssl.acceptedTcpNoDelay" default="true"/></Set>
+        <Set name="acceptedReceiveBufferSize" property="jetty.ssl.acceptedReceiveBufferSize" />
+        <Set name="acceptedSendBufferSize" property="jetty.ssl.acceptedSendBufferSize" />
+        <Get name="SelectorManager">
+          <Set name="connectTimeout" property="jetty.ssl.connectTimeout"/>
+        </Get>
+      </New>
+    </Arg>
+  </Call>
+
+  <!-- from etc/jetty-http.xml -->
+
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.ServerConnector">
+        <Arg name="server"><Ref refid="Server" /></Arg>
+        <Arg name="factories">
+          <Array type="org.eclipse.jetty.server.ConnectionFactory">
+            <Item>
+              <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                <Arg name="config"><Ref refid="httpConfig" /></Arg>
+              </New>
+            </Item>
+          </Array>
+        </Arg>
+        <Set name="host"><Property name="jetty.host" /></Set>
+        <Set name="port"><Property name="jetty.port" default="8081" /></Set>
+        <Set name="idleTimeout"><Property name="http.timeout" default="30000"/></Set>
+      </New>
+    </Arg>
+  </Call>
+
+</Configure>
