@@ -106,7 +106,7 @@ jobs:
     # TODO - uncomment this and delete line 138
     #if: ${{ success() && contains(github.ref,'heads/release') }}
     env:
-      TARGET_REF: needs.build.outputs.git-ref
+      TARGET_REF: ${{ needs.build.outputs.git-ref }}
     if: ${{ success() }}
     steps:
       - name: Checkout
