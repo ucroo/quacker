@@ -114,13 +114,13 @@ jobs:
       - name:
         run: |
           mkdir -p quackerTemp
-          echo "${{ env.TARGET_REF }}" > quackerTemp/RC_GIT_COMMIT
+          echo "${{ env.TARGET_REF }}" > quackerTemp/RC_IMAGE_ID
       - name: Push
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.FLOW_SERVER_PROVISIONING_API_TOKEN }}
         with:
-          source_file: "quackerTemp/RC_GIT_COMMIT"
+          source_file: "quackerTemp/RC_IMAGE_ID"
           destination_repo: "ucroo/flow-server-provisioning"
           destination_folder: "quackers"
           user_email: "ci@quacker.pathify.com"
