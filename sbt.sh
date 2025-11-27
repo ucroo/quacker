@@ -1,6 +1,13 @@
 #!/bin/sh
-SCRIPT_DIR=`dirname $0`
-echo "Script dir: $SCRIPT_DIR"
-IVY_HOME=$HOME/.ivy2/
-echo "Ivy home: $IVY_HOME"
-java -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xmx512M -Xss2M -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dsbt.boot.directory="$IVY_HOME/.sbt.sh-boot" -Dsbt.global.home="$IVY_HOME/.sbt.sh" -Dsbt.home="$IVY_HOME/.sbt.sh" -Dsbt.ivy.home=$IVY_HOME/.ivy2 -Dsbt.global.staging="$IVY_HOME/.sbt.sh-staging" -Dmetlx.configurationFile=config/configuration.local.xml -Dquacker.configDirectoryLocation=$ -jar $SCRIPT_DIR/sbt-launch-0.13.6.jar "$@"
+# Use Java 11 for sbt 1.x
+export JAVA_HOME="$HOME/Library/Caches/Coursier/arc/https/github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.29%252B7/OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.29_7.tar.gz/jdk-11.0.29+7/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Check if sbt is installed via Homebrew or use a direct download
+if command -v sbt >/dev/null 2>&1; then
+  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/configuration.local.xml -Dquacker.configDirectoryLocation=$ "$@"
+else
+  echo "sbt not found. Installing via Homebrew..."
+  brew install sbt
+  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/configuration.local.xml -Dquacker.configDirectoryLocation=$ "$@"
+fi

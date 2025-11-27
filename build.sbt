@@ -7,30 +7,17 @@ val scalaVersionString = "2.11.8"
 scalaVersion := scalaVersionString
 
 resolvers ++= Seq(
-  "snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
-  "releases"        at "http://oss.sonatype.org/content/repositories/releases",
-  "mavenCentral"  at  "http://mvnrepository.com/artifact",
+  "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+  "releases" at "https://oss.sonatype.org/content/repositories/releases",
   "oosnmp" at "https://oosnmp.net/dist/release"
 )
 
-unmanagedResourceDirectories in Test <+= (baseDirectory) { _ / "src/main/webapp" }
+Test / unmanagedResourceDirectories += baseDirectory.value / "src/main/webapp"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
-seq(webSettings :_*)
+enablePlugins(JettyPlugin)
 
-/*
-javaOptions in container ++= Seq(
-  "-Drun.mode=development",
-  "-Dmetlx.configurationFile=config/configuration.local.xml",
-  "-Dquacker.configDirectoryLocation=../stackableMonitoringDefinitions",
-  "-Dlogback.configurationFile=config/logback.xml",
-  "-XX:+UseConcMarkSweepGC",
-  "-XX:+CMSClassUnloadingEnabled",
-  "-Xmx256m",
-  "-Xms256m"
-)
-*/
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.+"
 
@@ -46,7 +33,7 @@ libraryDependencies ++= {
     /*telnet & munin*/
     "commons-net" % "commons-net" % "2.0",
     /*snmp*/
-    "org.snmp4j" % "snmp4j" % "1.11.5",
+    "org.snmp4j" % "snmp4j" % "2.5.11",
     /*mongo*/
     "org.mongodb" % "mongo-java-driver" % "2.6.3",
     /*html-cleaner for html parsing*/
@@ -122,45 +109,15 @@ ivyLoggingLevel := UpdateLogging.Full
 offline := false
 
 // set the prompt (for this build) to include the project id.
-shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
+ThisBuild / shellPrompt := { state => Project.extract(state).currentRef.project + "> " }
 
-// set the prompt (for the current project) to include the username
-shellPrompt := { state => System.getProperty("user.name") + "> " }
-
-// disable printing timing information, but still print [success]
-showTiming := true
-
-// disable printing a message indicating the success or failure of running a task
-showSuccess := true
-
-// change the format used for printing task completion time
-timingFormat := {
-  import java.text.DateFormat
-  DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-}
-
-testOptions in Test += Tests.Argument("-eI")
-
-
-// don't aggregate clean (See FullConfiguration for aggregation details)
-aggregate in clean := false
-
-// only show warnings and errors on the screen for compilations.
-//  this applies to both test:compile and compile and is Info by default
-logLevel in compile := Level.Warn
+Test / testOptions += Tests.Argument("-eI")
 
 // only show warnings and errors on the screen for all tasks (the default is Info)
 //  individual tasks can then be more verbose using the previous setting
 logLevel := Level.Warn
 
-// only store messages at info and above (the default is Debug)
-//   this is the logging level for replaying logging with 'last'
-//persistLogLevel := Level.Debug
-
 // only show 10 lines of stack traces
 traceLevel := 10
-
-// only show stack traces up to the first sbt stack frame
-traceLevel := 0
 
 credentials += Credentials(Path.userHome / ".ivy2" / "ivy-credentials")
