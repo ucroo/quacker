@@ -2,7 +2,7 @@ name := "Quacker"
 version := "1.1.0"
 organization := "stackableRegiments"
 
-val scalaVersionString = "2.11.8"
+val scalaVersionString = "2.11.12"
 
 scalaVersion := scalaVersionString
 
@@ -22,10 +22,10 @@ enablePlugins(JettyPlugin)
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.+"
 
 libraryDependencies ++= {
-  val liftVersion = "2.6.2"
-  val shiroVersion = "1.2.2"
+  val liftVersion = "3.5.0"
+  val shiroVersion = "1.13.0"
   val servletVersion = "2.5"
-  val jettyVersion = "9.2.4.v20141103"
+  val jettyVersion = "9.4.54.v20240208"
   Seq(
     /* Monitoring*/
    /*oracle*/

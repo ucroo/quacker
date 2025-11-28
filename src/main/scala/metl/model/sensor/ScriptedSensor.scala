@@ -128,9 +128,9 @@ case class ICMPFunctionalCheck(uri:String,ipv6:Boolean = false) extends Function
     val stringOutput = output.toString
     val timeTaken = pingTimeExtractor(stringOutput)
     val newData:Tuple2[Long,Map[String,GraphableDatum]] = (now,Map(
-      "checkType" -> "icmp",
-      "ipv6" -> ipv6,
-      "timeTaken" -> timeTaken.getOrElse(0.0)
+      "checkType" -> GraphableString("icmp"),
+      "ipv6" -> GraphableBoolean(ipv6),
+      "timeTaken" -> GraphableDouble(timeTaken.getOrElse(0.0))
     ))
     FunctionalCheckReturn(ScriptStepResult(body = stringOutput,duration = timeTaken.openOr(0)),totalDuration + timeTaken.openOr(0.0),environment,newData :: fcr.data)
   }
