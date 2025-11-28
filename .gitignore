@@ -7,3 +7,8 @@ config/configuration*.xml
 monitoringDashboardConfig/*.xml
 *.log
 config/quacker*.xml
+
+.bloop
+.metals
+.vscode
+metals.sbt

@@ -18,7 +18,6 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 enablePlugins(JettyPlugin)
 
-
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.+"
 
 libraryDependencies ++= {
@@ -28,7 +27,7 @@ libraryDependencies ++= {
   val jettyVersion = "9.4.54.v20240208"
   Seq(
     /* Monitoring*/
-   /*oracle*/
+    /*oracle*/
 //    "com.oracle" % "ojdbc6" % "11.2.0.4",
     /*telnet & munin*/
     "commons-net" % "commons-net" % "2.0",
@@ -48,7 +47,7 @@ libraryDependencies ++= {
     /*http*/
     "org.apache.httpcomponents" % "httpcore" % "4.1.2",
     /*memcached*/
-    //"spy" % "spymemcached" % "2.6",
+    // "spy" % "spymemcached" % "2.6",
     "net.spy" % "spymemcached" % "2.12.1",
     /*h2*/
     "com.h2database" % "h2" % "1.4.187",
@@ -63,20 +62,23 @@ libraryDependencies ++= {
     /*auth*/
     "io.github.stackableregiments" %% "lift-authentication" % "0.2.+",
     "io.github.stackableregiments" %% "cas-authentication" % "0.2.+",
-    
-    
+
     /*Lift framework*/
-    "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
-    "net.liftweb"       %% "lift-mapper"        % liftVersion        % "compile",
+    "net.liftweb" %% "lift-webkit" % liftVersion % "compile",
+    "net.liftweb" %% "lift-mapper" % liftVersion % "compile",
     "net.liftweb" %% "lift-mongodb" % liftVersion,
     "net.liftweb" %% "lift-mongodb-record" % liftVersion,
     "org.mongodb" %% "casbah" % "2.8.2",
     /*Standalone web server*/
-    "org.eclipse.jetty" % "jetty-webapp"        % jettyVersion   % "container,test",
-    "org.eclipse.jetty" % "jetty-plus"          % jettyVersion  % "container,test",
-    "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact("javax.servlet", "jar", "jar"),
+    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion % "container,test",
+    "org.eclipse.jetty" % "jetty-plus" % jettyVersion % "container,test",
+    "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact(
+      "javax.servlet",
+      "jar",
+      "jar"
+    ),
     /*Testing*/
-    "org.specs2"        %% "specs2"             % "2.3.12"             % "test",
+    "org.specs2" %% "specs2" % "2.3.12" % "test",
     /*Security stack*/
     "org.apache.shiro" % "shiro-core" % shiroVersion,
     "org.apache.shiro" % "shiro-cas" % shiroVersion,
@@ -92,7 +94,12 @@ libraryDependencies ++= {
     /*OAuth authentication*/
     "org.pac4j" % "pac4j-oauth" % "1.7.0"
   )
-}.map(_.excludeAll(ExclusionRule(organization = "org.slf4j")).exclude("com.sun.jdmk","jmxtools").exclude("javax.jms","jms").exclude("com.sun.jmx","jmxri"))
+}.map(
+  _.excludeAll(ExclusionRule(organization = "org.slf4j"))
+    .exclude("com.sun.jdmk", "jmxtools")
+    .exclude("javax.jms", "jms")
+    .exclude("com.sun.jmx", "jmxri")
+)
 
 javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
 
@@ -100,7 +107,9 @@ javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
 scalacOptions += "-deprecation"
 
 // define the repository to publish to
-publishTo := Some("sonatype" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+publishTo := Some(
+  "sonatype" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+)
 
 // set Ivy logging to be at the highest level
 ivyLoggingLevel := UpdateLogging.Full
@@ -109,7 +118,9 @@ ivyLoggingLevel := UpdateLogging.Full
 offline := false
 
 // set the prompt (for this build) to include the project id.
-ThisBuild / shellPrompt := { state => Project.extract(state).currentRef.project + "> " }
+ThisBuild / shellPrompt := { state =>
+  Project.extract(state).currentRef.project + "> "
+}
 
 Test / testOptions += Tests.Argument("-eI")
 
