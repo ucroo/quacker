@@ -25,7 +25,8 @@ libraryDependencies ++= {
   val shiroVersion   = "1.13.0"
   val servletVersion = "2.5"
   val jettyVersion   = "9.4.54.v20240208"
-    val otelVersion                = "1.56.0"
+  val otelVersion    = "1.56.0"
+  
   Seq(
     "commons-net"                   % "commons-net"          % "2.0",
     "org.snmp4j"                    % "snmp4j"               % "2.5.11",

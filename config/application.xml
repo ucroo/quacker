@@ -1,0 +1,6 @@
+<appConf>
+        <hostname>https://local.quacker.pathify.com:8444</hostname>
+        <authenticator>
+                <mockAuthenticator />
+        </authenticator>
+</appConf>
