@@ -3,30 +3,40 @@ version      := "1.1.0"
 organization := "stackableRegiments"
 
 val scalaVersionString = "2.11.12"
-
+val liftVersion        = "3.5.0"
+val shiroVersion       = "1.13.0"
+val servletVersion     = "2.5"
+val jettyVersion       = "9.4.54.v20240208"
+val otelVersion        = "1.56.0"
+val otelAgentVersion   = "2.22.0"
 scalaVersion := scalaVersionString
 
 resolvers ++= Seq(
   "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-  "releases"  at "https://oss.sonatype.org/content/repositories/releases",
-  "oosnmp"    at "https://oosnmp.net/dist/release"
+  "releases" at "https://oss.sonatype.org/content/repositories/releases",
+  "oosnmp" at "https://oosnmp.net/dist/release"
 )
 
 Test / unmanagedResourceDirectories += baseDirectory.value / "src/main/webapp"
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-target:jvm-1.8")
-
 enablePlugins(JettyPlugin)
+
+val otelAgentJar = Def.task {
+  (Runtime / managedClasspath).value
+    .find(_.data.getName.contains("opentelemetry-javaagent"))
+    .map(_.data.getAbsolutePath)
+    .getOrElse("")
+}
+
+Jetty / javaOptions ++= Options.Java.JettyOptions(otelEnabled = true, otelAgentJar.value)
+Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
+Jetty / containerArgs := Seq("--config", "jetty.xml")
+Jetty / containerPort := 8555
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.+"
 
 libraryDependencies ++= {
-  val liftVersion    = "3.5.0"
-  val shiroVersion   = "1.13.0"
-  val servletVersion = "2.5"
-  val jettyVersion   = "9.4.54.v20240208"
-  val otelVersion    = "1.56.0"
-  
+
   Seq(
     "commons-net"                   % "commons-net"          % "2.0",
     "org.snmp4j"                    % "snmp4j"               % "2.5.11",
@@ -57,16 +67,17 @@ libraryDependencies ++= {
       "jar",
       "jar"
     ),
-    "org.specs2"                   %% "specs2"        % "2.3.12" % "test",
-    "org.apache.shiro"              % "shiro-core"    % shiroVersion,
-    "org.apache.shiro"              % "shiro-cas"     % shiroVersion,
-    "org.apache.shiro"              % "shiro-web"     % shiroVersion,
-    "javax.servlet"                 % "servlet-api"   % servletVersion,
-    "io.github.stackableregiments" %% "ldap"          % "0.2.+",
-    "net.databinder.dispatch"      %% "dispatch-core" % "0.11.+",
-    "com.github.tototoshi"         %% "scala-csv"     % "1.2.1",
-    "org.pac4j"                     % "pac4j-oauth"   % "1.7.0",
-    "io.opentelemetry"                 % "opentelemetry-api"             % otelVersion
+    "org.specs2"                   %% "specs2"                  % "2.3.12"         % "test",
+    "org.apache.shiro"              % "shiro-core"              % shiroVersion,
+    "org.apache.shiro"              % "shiro-cas"               % shiroVersion,
+    "org.apache.shiro"              % "shiro-web"               % shiroVersion,
+    "javax.servlet"                 % "servlet-api"             % servletVersion,
+    "io.github.stackableregiments" %% "ldap"                    % "0.2.+",
+    "net.databinder.dispatch"      %% "dispatch-core"           % "0.11.+",
+    "com.github.tototoshi"         %% "scala-csv"               % "1.2.1",
+    "org.pac4j"                     % "pac4j-oauth"             % "1.7.0",
+    "io.opentelemetry"              % "opentelemetry-api"       % otelVersion,
+    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime"
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))
@@ -75,10 +86,7 @@ libraryDependencies ++= {
     .exclude("com.sun.jmx", "jmxri")
 )
 
-javacOptions ++= Seq("-target", "jvm-1.8")
-
-// append -deprecation to the options passed to the Scala compiler
-scalacOptions += "-deprecation"
+scalacOptions ++= Options.Scalac.full
 
 // define the repository to publish to
 publishTo := Some(
