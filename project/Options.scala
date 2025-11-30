@@ -6,7 +6,6 @@ object Options {
         Seq(
           "-Djavax.net.ssl.keyStore=keystore.jks",
           "-Djavax.net.ssl.keyStorePassword=changeit",
-          "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
           s"-Dotel.service.name=quacker.localhost.com",
           "-Dotel.exporter.otlp.protocol=grpc",
           "-Dotel.exporter.otlp.insecure=true",
