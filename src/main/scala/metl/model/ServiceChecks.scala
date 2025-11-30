@@ -14,6 +14,8 @@ import xml._
 import java.util.Date
 
 import net.liftweb.common.Logger
+import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.common.Attributes
 
 case class DashboardException(reason:String,detail:String,exceptions:List[Exception] = Nil) extends Exception(reason){
 	override def toString:String = {
@@ -119,6 +121,12 @@ case class SensorMetaData(name:String, label:String, mode:ServiceCheckMode, seve
 
 abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElement with metl.comet.CheckRenderHelper with Logger {
   import GraphableData._
+
+  private lazy val _clazzName   = this.getClass().getName()
+	private lazy val init = GlobalOpenTelemetry.get()
+	private lazy val sensorErrorMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.failures").ofLongs().build()
+	private lazy val sensorSuccessMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.sucesses").ofLongs().build()
+	private lazy val metricAttributes = Attributes.builder().put("name", metadata.name).build()
 	override val serviceName: String = metadata.serviceName
 	override val serviceLabel: String = metadata.serviceLabel
 	override val serverName: String = metadata.serverName
@@ -166,6 +174,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
     Schedule.schedule(this,Check,interval)
   }
   def fail(why:String,detail:String = "",timeTaken:Box[Double] = Empty) = {
+				sensorErrorMetric.record(1)
 		val lastUp = lastUptime
 		val now = updatedTime(success = false)
 		lastStatus = Full(false)
@@ -181,6 +190,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 		timeTaken.openOr((now.getTime - lastCheckBegin.openOr(now).getTime).toDouble)
 	}
   def succeed(why:String,timeTaken:Box[Double] = Empty,data:List[Tuple2[Long,Map[String,GraphableDatum]]] = Nil) = {
+		sensorSuccessMetric.record(1)
 		val now = new Date()
 		val durationOrTimeSinceStart = calculateCheckDuration(timeTaken)
 		checkDuration = Full(durationOrTimeSinceStart)

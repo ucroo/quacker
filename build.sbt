@@ -14,7 +14,7 @@ resolvers ++= Seq(
 
 Test / unmanagedResourceDirectories += baseDirectory.value / "src/main/webapp"
 
-scalacOptions ++= Seq("-deprecation", "-unchecked")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-target:jvm-1.8")
 
 enablePlugins(JettyPlugin)
 
@@ -25,6 +25,7 @@ libraryDependencies ++= {
   val shiroVersion   = "1.13.0"
   val servletVersion = "2.5"
   val jettyVersion   = "9.4.54.v20240208"
+    val otelVersion                = "1.56.0"
   Seq(
     "commons-net"                   % "commons-net"          % "2.0",
     "org.snmp4j"                    % "snmp4j"               % "2.5.11",
@@ -63,7 +64,8 @@ libraryDependencies ++= {
     "io.github.stackableregiments" %% "ldap"          % "0.2.+",
     "net.databinder.dispatch"      %% "dispatch-core" % "0.11.+",
     "com.github.tototoshi"         %% "scala-csv"     % "1.2.1",
-    "org.pac4j"                     % "pac4j-oauth"   % "1.7.0"
+    "org.pac4j"                     % "pac4j-oauth"   % "1.7.0",
+    "io.opentelemetry"                 % "opentelemetry-api"             % otelVersion
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))
@@ -72,7 +74,7 @@ libraryDependencies ++= {
     .exclude("com.sun.jmx", "jmxri")
 )
 
-javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
+javacOptions ++= Seq("-target", "jvm-1.8")
 
 // append -deprecation to the options passed to the Scala compiler
 scalacOptions += "-deprecation"
