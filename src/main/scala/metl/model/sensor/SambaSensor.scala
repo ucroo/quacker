@@ -24,7 +24,6 @@ case class SambaSensor(metadata:SensorMetaData, hostname:String, domain:String, 
         case a:Array[String] if a.length == 0 => throw new DashboardException("Samba exception","resource empty")
         case a:Array[String] => a.toList
         case null => throw DashboardException("Samba exception","resource cannot be resolved")
-        case other => throw DashboardException("Samba exception","unexpected response from SmbFile.list => %s".format(other))
       }
       fileList.mkString(", ")
     }

@@ -29,7 +29,7 @@ abstract class PushingToRemoteHistoryListener(name:String) extends HistoryListen
 		if (tryImmediately){
 			internalResetEnvironment
 		} else {
-			Schedule.schedule(this,Restart,1000)
+			Schedule.schedule(this,Restart,TimeSpan(1000))
 		}
 	}
 	protected def internalPerformRepeatedAtomicAction(cr:CheckResult):Unit = {
@@ -156,31 +156,27 @@ class MongoHistoryListener(override val name:String,host:String,port:Int,databas
   }
 	def toDBObject(input:Any,internal:Boolean = false):AnyRef = {
 		input match {
-			case t:Tuple2[String,Any] => {
+			case t:Tuple2[_,_] => 
 				val dbo = new BasicDBObject
-				dbo.put(t._1,toDBObject(t._2,true))
+				dbo.put(t._1.toString(),toDBObject(t._2,true))
 				dbo
-			}
 			case cr:CheckResult => crToDBObject(cr)
-			case m:Map[String,Any] => {
+			case m:Map[_,_] => 
 				val dbo = new BasicDBObject
-				m.keys.foreach(k => dbo.put(k,toDBObject(m(k),true)))
+				m.keys.foreach(k => dbo.put(k.toString(),toDBObject(m(k),true)))
 				dbo
-			}
-			case l:List[Any] => {
+			case l:List[_] => 
 				val dbl = new BasicDBList
 				l.foreach(li => dbl.add(toDBObject(li,true)))
 				dbl
-			}
 			case s:String if internal => s.asInstanceOf[AnyRef]
 			case f:Float if internal => f.asInstanceOf[AnyRef]
 			case d:Double if internal => d.asInstanceOf[AnyRef]
 			case l:Long if internal => l.asInstanceOf[AnyRef]
 			case i:Int if internal => i.asInstanceOf[AnyRef]
-			case other => {
+			case other => 
 				error("unknown dbobject encountered: %s".format(other))
 				new BasicDBObject("unknown",other.toString)
-			}
 		}
 	}
   override def getHistoryFor(service:String, server:String, serviceCheck:String, after:Option[Long], limit:Option[Int]):List[CheckResult] = { //not yet implementing "after"

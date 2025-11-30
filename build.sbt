@@ -1,5 +1,5 @@
-name := "Quacker"
-version := "1.1.0"
+name         := "Quacker"
+version      := "1.1.0"
 organization := "stackableRegiments"
 
 val scalaVersionString = "2.11.12"
@@ -8,8 +8,8 @@ scalaVersion := scalaVersionString
 
 resolvers ++= Seq(
   "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-  "releases" at "https://oss.sonatype.org/content/repositories/releases",
-  "oosnmp" at "https://oosnmp.net/dist/release"
+  "releases"  at "https://oss.sonatype.org/content/repositories/releases",
+  "oosnmp"    at "https://oosnmp.net/dist/release"
 )
 
 Test / unmanagedResourceDirectories += baseDirectory.value / "src/main/webapp"
@@ -21,78 +21,49 @@ enablePlugins(JettyPlugin)
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.+"
 
 libraryDependencies ++= {
-  val liftVersion = "3.5.0"
-  val shiroVersion = "1.13.0"
+  val liftVersion    = "3.5.0"
+  val shiroVersion   = "1.13.0"
   val servletVersion = "2.5"
-  val jettyVersion = "9.4.54.v20240208"
+  val jettyVersion   = "9.4.54.v20240208"
   Seq(
-    /* Monitoring*/
-    /*oracle*/
-//    "com.oracle" % "ojdbc6" % "11.2.0.4",
-    /*telnet & munin*/
-    "commons-net" % "commons-net" % "2.0",
-    /*snmp*/
-    "org.snmp4j" % "snmp4j" % "2.5.11",
-    /*mongo*/
-    "org.mongodb" % "mongo-java-driver" % "2.6.3",
-    /*html-cleaner for html parsing*/
-    "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.9",
-    /*mysql*/
-    "mysql" % "mysql-connector-java" % "5.1.6",
-    /*subversion*/
-    "org.tmatesoft.svnkit" % "svnkit" % "1.3.4",
-    /*general*/
-    "commons-io" % "commons-io" % "1.4",
-    "commons-codec" % "commons-codec" % "1.9",
-    /*http*/
-    "org.apache.httpcomponents" % "httpcore" % "4.1.2",
-    /*memcached*/
-    // "spy" % "spymemcached" % "2.6",
-    "net.spy" % "spymemcached" % "2.12.1",
-    /*h2*/
-    "com.h2database" % "h2" % "1.4.187",
-    /*xmpp*/
-    "jivesoftware" % "smack" % "3.1.0",
-    "jivesoftware" % "smackx" % "3.1.0",
-    /*samba*/
-    "jcifs" % "jcifs" % "1.3.17",
-    /*general utils specific*/
-    "io.github.stackableregiments" %% "common-utils" % "1.2.+",
-//    "com.metl" % "LiftExtensions" % "1.0-SNAPSHOT",
-    /*auth*/
-    "io.github.stackableregiments" %% "lift-authentication" % "0.2.+",
-    "io.github.stackableregiments" %% "cas-authentication" % "0.2.+",
-
-    /*Lift framework*/
-    "net.liftweb" %% "lift-webkit" % liftVersion % "compile",
-    "net.liftweb" %% "lift-mapper" % liftVersion % "compile",
-    "net.liftweb" %% "lift-mongodb" % liftVersion,
-    "net.liftweb" %% "lift-mongodb-record" % liftVersion,
-    "org.mongodb" %% "casbah" % "2.8.2",
-    /*Standalone web server*/
-    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion % "container,test",
-    "org.eclipse.jetty" % "jetty-plus" % jettyVersion % "container,test",
+    "commons-net"                   % "commons-net"          % "2.0",
+    "org.snmp4j"                    % "snmp4j"               % "2.5.11",
+    "org.mongodb"                   % "mongo-java-driver"    % "2.6.3",
+    "net.sourceforge.htmlcleaner"   % "htmlcleaner"          % "2.9",
+    "mysql"                         % "mysql-connector-java" % "5.1.6",
+    "org.tmatesoft.svnkit"          % "svnkit"               % "1.3.4",
+    "commons-io"                    % "commons-io"           % "1.4",
+    "commons-codec"                 % "commons-codec"        % "1.9",
+    "org.apache.httpcomponents"     % "httpcore"             % "4.1.2",
+    "net.spy"                       % "spymemcached"         % "2.12.1",
+    "com.h2database"                % "h2"                   % "1.4.187",
+    "jivesoftware"                  % "smack"                % "3.1.0",
+    "jivesoftware"                  % "smackx"               % "3.1.0",
+    "jcifs"                         % "jcifs"                % "1.3.17",
+    "io.github.stackableregiments" %% "common-utils"         % "1.2.+",
+    "io.github.stackableregiments" %% "lift-authentication"  % "0.2.+",
+    "io.github.stackableregiments" %% "cas-authentication"   % "0.2.+",
+    "net.liftweb"                  %% "lift-webkit"          % liftVersion  % "compile",
+    "net.liftweb"                  %% "lift-mapper"          % liftVersion  % "compile",
+    "net.liftweb"                  %% "lift-mongodb"         % liftVersion,
+    "net.liftweb"                  %% "lift-mongodb-record"  % liftVersion,
+    "org.mongodb"                  %% "casbah"               % "2.8.2",
+    "org.eclipse.jetty"             % "jetty-webapp"         % jettyVersion % "container,test",
+    "org.eclipse.jetty"             % "jetty-plus"           % jettyVersion % "container,test",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact(
       "javax.servlet",
       "jar",
       "jar"
     ),
-    /*Testing*/
-    "org.specs2" %% "specs2" % "2.3.12" % "test",
-    /*Security stack*/
-    "org.apache.shiro" % "shiro-core" % shiroVersion,
-    "org.apache.shiro" % "shiro-cas" % shiroVersion,
-    "org.apache.shiro" % "shiro-web" % shiroVersion,
-    /*Service stack*/
-    "javax.servlet" % "servlet-api" % servletVersion,
-    /*Adhoc channels*/
-    "io.github.stackableregiments" %% "ldap" % "0.2.+",
-    /*Http management*/
-    "net.databinder.dispatch" %% "dispatch-core" % "0.11.+",
-    /*Parsing*/
-    "com.github.tototoshi" %% "scala-csv" % "1.2.1",
-    /*OAuth authentication*/
-    "org.pac4j" % "pac4j-oauth" % "1.7.0"
+    "org.specs2"                   %% "specs2"        % "2.3.12" % "test",
+    "org.apache.shiro"              % "shiro-core"    % shiroVersion,
+    "org.apache.shiro"              % "shiro-cas"     % shiroVersion,
+    "org.apache.shiro"              % "shiro-web"     % shiroVersion,
+    "javax.servlet"                 % "servlet-api"   % servletVersion,
+    "io.github.stackableregiments" %% "ldap"          % "0.2.+",
+    "net.databinder.dispatch"      %% "dispatch-core" % "0.11.+",
+    "com.github.tototoshi"         %% "scala-csv"     % "1.2.1",
+    "org.pac4j"                     % "pac4j-oauth"   % "1.7.0"
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))

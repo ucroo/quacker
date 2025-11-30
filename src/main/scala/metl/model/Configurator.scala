@@ -28,6 +28,7 @@ object ServiceConfigurator extends Logger {
 		}
 	}
 	def processDirectory(path:File, visit:File=>Tuple2[Boolean,String]):Map[String,Tuple2[Boolean,String]]  = {
+		warn(s"prcess Directory $path")
 		var items = Map.empty[String,Tuple2[Boolean,String]]
 		path.listFiles.sortWith(_.getName < _.getName).map(f => {
 			val pathName = f.getAbsolutePath
@@ -48,12 +49,15 @@ object ServiceConfigurator extends Logger {
 		items
 	}
 	def loadServices:Map[String,Tuple2[Boolean,String]] = {
+		warn(s"LOAD SERVICE ${Globals.configDirectoryLocation}")
 		var errorThrown = false
 		Globals.clearValidUsers
 		Servers.clear
 		ErrorRecorder.clear
 		HistoryServer.clear
+		
 		val output = processDirectory(new File(Globals.configDirectoryLocation),(f:File) => {
+			warn(s"service file $f")
 			if (f.getName.endsWith(".xml")){
 				loadServicesFromPath(f.getAbsolutePath)
 			} else {
@@ -67,6 +71,7 @@ object ServiceConfigurator extends Logger {
 		loadServices
 	}
 	def describeAutoConfigure(input:Map[String,Tuple2[Boolean,String]]):String = {
+		warn(s"input $input")
 		input.toList.map(tuple => {
 			val pathName = tuple._1
 			val result = tuple._2
@@ -78,8 +83,10 @@ object ServiceConfigurator extends Logger {
 			})  
 		}).mkString("\r\n")
 	}
+
 	def loadServicesFromPath(xmlPath:String):Tuple2[Boolean,String] = {
 		try {
+			warn(s"loadservice from path $xmlPath")
 			val x = scala.xml.XML.loadFile(xmlPath)
 			var messages = List.empty[String]
 			def safelyConfigure(name:String,usage:()=>List[String]):Unit = {

@@ -18,10 +18,12 @@ class Boot extends Logger {
   implicit val formats = GraphableData.formats
 
   def boot {
+    info("start boot")
     Globals.isDevMode = Props.mode match {
       case Props.RunModes.Production => false
       case _ => true
     }
+    info("LiftRules")
     LiftRules.attachResourceId = {
       if (Globals.isDevMode){
         s => "%s?%s".format(s,nextFuncName)
@@ -30,6 +32,8 @@ class Boot extends Logger {
         s => "%s?%s".format(s,prodRunId)
       }
     }
+    warn(s"AUTOCONFIG")
+    warn(ServiceConfigurator.autoConfigure)
     val configurationStatus = ServiceConfigurator.describeAutoConfigure(ServiceConfigurator.autoConfigure)
     warn("Xml configuration reloaded\r\n%s".format(configurationStatus))
 

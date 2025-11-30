@@ -68,12 +68,12 @@ object Servers extends ConfigFileReader{
 		output
 	}
 	def rebuildChecks = {
+		info("rebuild Checks")
 		val oldChecks = checks
 		checks = services.map(service => service.servers).map(servers => servers.map(server => server.checks).flatten.filter(_.isInstanceOf[Sensor]).map(_.asInstanceOf[Sensor])).flatten.toList
 		oldChecks.foreach(check => {
 			if (!checks.contains(check)){
 				check ! StopSensor
-//				Schedule.schedule(check,StopPinger,60 seconds)
 			}
 		})
 		checks.foreach(check => {

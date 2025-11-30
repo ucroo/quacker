@@ -190,23 +190,6 @@ case class JDBCFunctionalCheck(driver:String,url:String,username:String,password
             (false,null.asInstanceOf[java.sql.Connection])
           }
         }
-/*
-        // Fruitless type test: a value of type (Boolean,Connection) cannot also be a List[Option[Option[Tuple2[Boolean,Connection]]]]
-        result match {
-          case l:List[Option[Option[Tuple2[Boolean,Connection]]]] if l.length > 0 => l.head match {
-            case Some(Some((_,null))) => {
-              errors = errors ::: List(new DashboardException("SQL Connection failed","connection is null"))
-            }
-            case Some(Some((true,connection))) => {
-            }
-            case Some(Some((false,other))) => {
-              errors = errors ::: List(new DashboardException("SQL Connection failed","connection: %s".format(other.toString)))
-            }
-            case other => {
-              errors = errors ::: List(new DashboardException("SQL Connection failed","other: %s".format(other.toString)))
-            }
-          }
-        }*/
       })),Duration(connectionCreationTimeout,"millis"))
     } catch {
       case e:TimeoutException => {

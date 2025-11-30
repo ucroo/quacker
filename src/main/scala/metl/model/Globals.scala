@@ -15,8 +15,8 @@ import scala.collection.JavaConverters._
 
 object EnvVariable extends Logger {
   protected val environmentVariables:Map[String,String] = System.getenv.asScala.toMap;
-  info(environmentVariables)
-  protected def trimSystemProp(in:String):Box[String] = {
+  trace(environmentVariables)
+  protected def trimSystemProp(in:String):Option[String] = {
     try {
       var value = in.trim
       if (value.startsWith("\"")){
@@ -25,30 +25,27 @@ object EnvVariable extends Logger {
       if (value.endsWith("\"")){
         value = value.reverse.drop(1).reverse
       }
-      Full(value)
+      Option(value)
     } catch {
       case e:Exception => ParamFailure("exception while getting systemProperty",Full(e),Empty,in)
     }
   }
-  def getProp(systemEnvName:String,javaPropName:String):Box[String] = {
-    environmentVariables.get(systemEnvName).filterNot(v => v == null || v == "").map(v => trimSystemProp(v)).getOrElse({
-      val value = net.liftweb.util.Props.get(javaPropName).map(v => Full(v)).openOr(Full(System.getProperty(javaPropName)))
-      trace("getting from java prop: %s => %s".format(javaPropName,value))
-      value
-    })
+  def getProp(systemEnvName:String,javaPropName:String):Option[String] = {
+    lazy val defaultValue = Props.get(javaPropName).toOption.flatMap(v => Option(v)).orElse(Option(System.getProperty(javaPropName)))
+
+    val fromEnvironmentVariables = for {
+      env <-    environmentVariables.get(systemEnvName)
+      trim <- trimSystemProp(env)
+    } yield trim
+
+    fromEnvironmentVariables.orElse(defaultValue)
+    
   }
 }
 
 object Globals extends Logger {
   //Globals for the system
-  var configDirectoryLocation = "config"
-  EnvVariable.getProp("QUACKER_CONFIG_DIRECTORY_LOCATION","quacker.configDirectoryLocation").map(qcdl => {
-    trace("setting config directory location to: %s".format(qcdl))
-    configDirectoryLocation = qcdl
-    qcdl
-  }).openOr({
-    throw new Exception("no config directory location passed")
-  })
+  val configDirectoryLocation = EnvVariable.getProp("QUACKER_CONFIG_DIRECTORY_LOCATION","quacker.configDirectoryLocation").getOrElse("config")
   var isDevMode = false
 	protected var validUserAccesses:List[UserAccessRestriction] = List.empty[UserAccessRestriction]
 	def setValidUsers(newUsers:List[UserAccessRestriction]) = {

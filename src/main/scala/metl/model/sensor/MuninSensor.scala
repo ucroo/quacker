@@ -6,7 +6,7 @@ import metl.model._
 import net.liftweb.util.Helpers.{tryo, _}
 import org.apache.commons.net.telnet.TelnetClient
 
-class MSMap[A,B](defaultFunc:A=>B = (a:A) => null.asInstanceOf[B]) extends scala.collection.mutable.HashMap[A,B] with scala.collection.mutable.SynchronizedMap[A,B]{
+class MSMap[A,B](defaultFunc:A=>B = (a:A) => null.asInstanceOf[B]) extends scala.collection.mutable.HashMap[A,B] with  scala.collection.mutable.SynchronizedMap[A,B]{
   override def default(key:A):B = defaultFunc(key)
 }
 abstract class MuninFieldType {}
