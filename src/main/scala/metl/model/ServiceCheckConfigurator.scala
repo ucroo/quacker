@@ -7,7 +7,7 @@ import net.liftweb.util.Helpers._
 import scala.xml.Node
 
 object ServiceCheckConfigurator extends ConfigFileReader with Logger {
-  def configureFromXml(xml:Node, serviceName:String = "unknown", serviceLabel:String = "unknown", serverName:String = "unknown", serverLabel:String = "unknown"):List[VisualElement] = {
+  def configureFromXml(xml:Node, serviceName:String, serviceLabel:String, serverName:String, serverLabel:String ):List[VisualElement] = {
     trace("loading xml: %s".format(xml))
     (xml \\ "serviceCheck").map(sc => {
       debug("Configuring serviceCheck from:\n%s".format(sc))
