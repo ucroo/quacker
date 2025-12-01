@@ -1,25 +1,17 @@
 package metl.model
 
-import org.apache.commons.io.IOUtils
 import net.liftweb._
 import net.liftweb.actor._
+import net.liftweb.common.Logger
 import net.liftweb.common._
-import http._
+import net.liftweb.json._
+
+import java.io._
+import java.util.Date
+import scala.xml._
+
 import util._
 import Helpers._
-import net.liftweb.http.SHtml._
-import java.util.Date
-
-import collection.JavaConverters._
-import net.liftweb.common.Logger
-import net.liftweb.util.TimeHelpers
-//file writer
-import java.io._
-
-import metl.comet._
-
-import scala.xml._
-import net.liftweb.json._
 
 abstract class ServiceCheckMode
 case object STAGING extends ServiceCheckMode
@@ -132,6 +124,7 @@ object GraphableDatumSerializer extends CustomSerializer[GraphableDatum]((format
 }))
 
 object GraphableData {
+	import scala.language.implicitConversions
   val formats = net.liftweb.json.DefaultFormats + GraphableDatumSerializer + GraphableDoubleSerializer + GraphableFloatSerializer + GraphableLongSerializer + GraphableIntSerializer + GraphableBooleanSerializer
   implicit def convert(in:String) = GraphableString(in)
   implicit def convert(in:Long) = GraphableLong(in)
@@ -386,7 +379,6 @@ object ErrorRecorder extends LiftActor with ConfigFileReader {
 		val diskLoggers = (xml \\ "diskLogger").map(n => {
 			val name = getText(n,"name").getOrElse("")
 			val file = getText(n,"file").getOrElse(throw new Exception("no file name specified for disklogger: %s".format(n.toString)))
-			val level = getNodes(n,"levels").headOption.getOrElse(<error>No suitable levels found</error>)
 			val servicePermissions:List[ServicePermission] = getNodes(n,"servicePermissions").map(spNodes => getNodes(spNodes,"service").map(sp => ServicePermission.configureFromXml(sp))).flatten.toList
 			val restrictions = UserAccessRestriction(name,servicePermissions)
 			val filterFunc = (cr:CheckResult) => restrictions.permit(cr)

@@ -4,8 +4,6 @@ package lib {
 import net.liftweb._
 import http._
 import util._
-import common._
-import _root_.java.util.Date
 
 /**
  * A factory for generating new instances of Date.  You can create
@@ -23,8 +21,9 @@ object DependencyFactory extends Factory {
    * results in all the objects getting initialized and
    * registering their types with the dependency injector
    */
-  private def init() {
+  private def init():Unit =  {
     List(time)
+    ()
   }
   init()
 }

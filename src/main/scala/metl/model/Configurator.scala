@@ -1,32 +1,17 @@
 package metl.model
 
-import metl.comet._
-import scala.xml._
 import net.liftweb._
-import common._
-import util._
-import Helpers._
 
-import javax.mail._
-import javax.mail.internet._
 import java.io.File
+
+import common._
 
 object ServiceConfigurator extends Logger {
 	private val osName = System.getProperty("os.name")	
 	val isWindows = osName.toLowerCase.trim.startsWith("windows")
 	val isLinux = osName.toLowerCase.trim.startsWith("linux")
 	val isOSX = osName.toLowerCase.trim.startsWith("macos")
-	private	def getParamOrElse(paramName: String, orElse: => String):String = {
-		System.getProperty(paramName) match {
-			case s:String if (s.length > 0) => s
-			case _ => {
-				Props.get(paramName) match {
-					case Full(s) => s
-					case _ => orElse
-				}
-			}	
-		}
-	}
+
 	def processDirectory(path:File, visit:File=>Tuple2[Boolean,String]):Map[String,Tuple2[Boolean,String]]  = {
 		warn(s"prcess Directory $path")
 		var items = Map.empty[String,Tuple2[Boolean,String]]
@@ -50,7 +35,6 @@ object ServiceConfigurator extends Logger {
 	}
 	def loadServices:Map[String,Tuple2[Boolean,String]] = {
 		warn(s"LOAD SERVICE ${Globals.configDirectoryLocation}")
-		var errorThrown = false
 		Globals.clearValidUsers
 		Servers.clear
 		ErrorRecorder.clear

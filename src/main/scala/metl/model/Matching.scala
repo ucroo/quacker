@@ -204,10 +204,7 @@ object Matchers extends ConfigFileReader {
 			val children = configureVerificationFuncFromXml(o)
 			SomeMatcher(children.getSubMatchers)
 		})
-		val notSomeFuncs = getImmediateNodes(n,"notSome").map(o => {
-			val children = configureVerificationFuncFromXml(o)
-			SomeMatcher(children.getSubMatchers)
-		})
+
 		val someNotFuncs = getImmediateNodes(n,"someNot").map(o => {
 			val children = configureVerificationFuncFromXml(o)
 			SomeNotMatcher(children.getSubMatchers)

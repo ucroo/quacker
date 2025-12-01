@@ -17,7 +17,7 @@ import metl.view.{DebugToolsRestHelper, ProbeRestHelper, SystemRestHelper}
 class Boot extends Logger {
   implicit val formats = GraphableData.formats
 
-  def boot {
+  def boot: Unit = {
     info("start boot")
     Globals.isDevMode = Props.mode match {
       case Props.RunModes.Production => false
@@ -71,12 +71,14 @@ class Boot extends Logger {
     LiftRules.loggedInTest = Full(() => User.loggedIn_?)
 
     metl.comet.DashboardServer
+    ()
+  
   }
 
   /**
     * Force the request to be UTF-8
     */
-  private def makeUtf8(req: HTTPRequest) {
+  private def makeUtf8(req: HTTPRequest):Unit =  {
     req.setCharacterEncoding("UTF-8")
   }
 }

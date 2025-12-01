@@ -9,6 +9,7 @@ import JsCmds._
 import json.JsonAST._
 import util._
 import Helpers._
+import scala.language.postfixOps
 
 import net.liftweb.http.js.JE.Call
 

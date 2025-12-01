@@ -1,21 +1,18 @@
 package metl.model
 
-import metl.comet._
-import net.liftweb._
-import net.liftweb.actor._
-import net.liftweb.common._
-import http._
-import js._
-import json.JsonAST._
-import util.{Helpers, _}
-import Helpers._
-
-import xml._
-import java.util.Date
-
-import net.liftweb.common.Logger
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.Attributes
+import java.util.Date
+import metl.comet._
+import net.liftweb.actor._
+import net.liftweb.common.Logger
+import net.liftweb.common._
+import net.liftweb.json.JsonAST._
+import net.liftweb.util.Helpers
+import net.liftweb.util.Helpers._
+import net.liftweb.util._
+import scala.language.postfixOps
+import scala.xml._
 
 case class DashboardException(reason:String,detail:String,exceptions:List[Exception] = Nil) extends Exception(reason){
 	override def toString:String = {
@@ -120,7 +117,6 @@ case object NullCheck extends VisualElement {
 case class SensorMetaData(name:String, label:String, mode:ServiceCheckMode, severity:ServiceCheckSeverity, serviceName:String, serviceLabel:String, serverName:String, serverLabel:String, expectFail:Boolean = false, timeout:Option[TimeSpan] = None, acceptedFailures:Int = 1)
 
 abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElement with metl.comet.CheckRenderHelper with Logger {
-  import GraphableData._
 
   private lazy val _clazzName   = this.getClass().getName()
 	private lazy val init = GlobalOpenTelemetry.get()
@@ -218,34 +214,28 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 			fail(reason,detail,lastCheckBegin.map(d => (new Date().getTime - d.getTime).toDouble))
 			internalResetEnvironment
 			schedule()
+			()
 		}
     case t:Throwable =>{
       fail(t.toString,timeTaken = lastCheckBegin.map(d => (new Date().getTime - d.getTime).toDouble))
       internalResetEnvironment
       schedule()
+			()
     }
     case _ => {}
   }
   override def asJson = {
-		val (why,detail) = lastStatus.map(s => s match {
-			case true => (lastWhy.openOr("").take(500),lastDetail.openOr("").take(500))
-			case false => (lastWhy.openOr(""),lastDetail.openOr(""))
-		}).openOr(("",""))
 		List(
       JField("type",JString("pinger")),
       JField("name",JString(name)),
       JField("period",JInt(pollInterval.millis)),
       JField("mode",JString(mode.toString)),
       JField("severity",JString(severity.toString)),
-			//JField("lastWhy",JString(why)),
-      //JField("lastDetail",JString(detail)),
 			JField("expectFail",JBool(metadata.expectFail)),
 			JField("history",JArray(history.drop(1).map(c => JObject(c.generateJson))))
     ) ::: history.headOption.toList.flatMap(h => {
 			h.generateJson
-		}) //::: lastUptime.map(lu => JField("lastUp",JInt(lu.getTime))).toList :::
-			//lastStatus.map(ls => JField("status",JBool(ls))).toList :::
-			//lastCheck.map(lc => JField("lastCheck",JInt(lc.getTime()))).toList
+		}) 
   }
 	private var isStopped = true
 	def isRunning:Boolean = !isStopped
@@ -264,6 +254,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 			if (!isStopped){
 				privatePerformCheck
 				schedule()
+				()
 			}
     }
 		case StopSensor => {
@@ -280,6 +271,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 				resetEnvironment
 				DashboardServer ! CreateCheck(this)
 				schedule(2 seconds)
+				()
 			}
 		}
     case _ => {}

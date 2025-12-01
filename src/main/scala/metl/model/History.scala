@@ -30,6 +30,7 @@ abstract class PushingToRemoteHistoryListener(name:String) extends HistoryListen
 			internalResetEnvironment
 		} else {
 			Schedule.schedule(this,Restart,TimeSpan(1000))
+			()
 		}
 	}
 	protected def internalPerformRepeatedAtomicAction(cr:CheckResult):Unit = {
@@ -72,6 +73,7 @@ class InMemoryHistoryListener(override val name:String,historyCountPerItem:Int) 
       newValue = dequeued._2
     }
     store += ((key,newValue))
+		()
   }
   override def getHistoryFor(service:String,server:String,serviceCheck:String,after:Option[Long],limit:Option[Int]):List[CheckResult] = {
     val res = store.get((service,server,serviceCheck)).map(_.toList).getOrElse(Nil)
@@ -101,11 +103,11 @@ class MongoHistoryListener(override val name:String,host:String,port:Int,databas
 	var mongo = new MongoClient(host,port)
 	//choosing to use the "normal" write concern.  http://api.mongodb.org/java/2.6/com/mongodb/WriteConcern.html for more information
 	val defaultWriteConcern: WriteConcern = WriteConcern.valueOf("NORMAL")
-	def withMongo[A](action:DBCollection=>A):Option[A] = {
+	def withMongo[T](action:DBCollection=>T):Option[T] = {
 		try {
 			val db = mongo.getDB(database)
 			val coll = db.getCollection(collection)
-			Some(action(coll))
+			Option(action(coll))
 		} catch {
 			case e:Throwable => {
 				error("failed to write to mongodb (%s:%s/%s/%s)".format(host,port,database,collection),e)

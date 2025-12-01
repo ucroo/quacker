@@ -35,7 +35,7 @@ class MuninSensor(metadata:SensorMetaData, host:String, port:Int, onlyFetch:List
     map
   }
   override val commandResponseTerminator:Option[String] = Some("\n.\n")
-  protected def generatedDelta[Double](inputName:String,input:Map[String,scala.Double]):Map[String,scala.Double] = {
+  protected def generatedDelta(inputName:String,input:Map[String,scala.Double]):Map[String,scala.Double] = {
     val result = previous.get(inputName).map(po => Map(input.keys.map(ink => {
       val updatedValue = (po(ink),input(ink)) match {
         case (p:scala.Double,i:scala.Double) if (i < p) => {
@@ -65,7 +65,7 @@ class MuninSensor(metadata:SensorMetaData, host:String, port:Int, onlyFetch:List
   protected def interpretMuninData(tc:TelnetClient):Map[String,Map[String,Double]] = {
     val outputStream = new BufferedOutputStream(tc.getOutputStream)
     val inputStream = new BufferedInputStream(tc.getInputStream)
-    var output = readStream(inputStream)
+    val output = readStream(inputStream)
     if (output.length == 0)
       throw new DashboardException("Munin failed","no response from remote node")
     writeTo("list",outputStream)

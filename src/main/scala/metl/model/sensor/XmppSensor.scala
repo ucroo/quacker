@@ -35,10 +35,12 @@ case class XmppSensor(metadata:SensorMetaData, resource:String, xmppServiceName:
       val exceptionMessage = "Xmpp server responded correctly: %s".format(expected.toString)
       succeed(exceptionMessage)
       schedule()
+      ()
     }
     case other:Throwable => {
       fail(other.toString)
       schedule()
+      ()
     }
   }:PartialFunction[Throwable,Unit]) orElse super.exceptionHandler
   override def resetEnvironment = {

@@ -1,14 +1,8 @@
 package metl.model
 
-import net.liftweb.http._
-import net.liftweb.common._
-import net.liftweb.util.Helpers._
-import scala.xml._
-import scala.collection.mutable.{HashMap, SynchronizedMap, ListBuffer}
-import scala.collection.JavaConversions._
-import com.mongodb.BasicDBObject
-import com.metl.cas._
 import metl.comet._
+
+import scala.xml._
 
 object ServicePermission extends ConfigFileReader {
 	def configureFromXml(node:Node):ServicePermission = {

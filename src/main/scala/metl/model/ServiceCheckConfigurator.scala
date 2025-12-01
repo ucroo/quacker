@@ -18,7 +18,6 @@ object ServiceCheckConfigurator extends ConfigFileReader with Logger {
       val mode = ServiceCheckMode.parse(getText(sc,"mode").getOrElse("test"))
       val severity = ServiceCheckSeverity.parse(getText(sc,"severity").getOrElse("alert"))
       val timeout = getInt(sc,"timeout").map(t => new TimeSpan(t))
-      val acceptedFailures = getInt(sc,"requiredSequentialFailures")
       val expectFail = getBool(sc,"expectFail")
       var failed = false
       var errors = List.empty[String]

@@ -1,23 +1,7 @@
 package metl.model
 
-import org.apache.commons.io.IOUtils
-import net.liftweb._
-import net.liftweb.http._
-import net.liftweb.actor._
-import net.liftweb.common._
-import http.js.JsCmds._
-import util._
-import Helpers._
-import xml._
-import S._
-import net.liftweb.http.SHtml._
-import java.util.Date
 import scala.util.Random.shuffle
-import collection.JavaConverters._
-import net.liftweb.common.Logger
-import net.liftweb.util.TimeHelpers
-import metl.comet._
-import scala.collection.mutable.HashMap
+import scala.xml._
 
 case class ServiceDefinition(name:String,servers:List[ServerDefinition])
 case class ServerDefinition(name:String,service:String,checks:List[VisualElement])

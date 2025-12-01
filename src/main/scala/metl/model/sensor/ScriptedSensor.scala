@@ -1,25 +1,31 @@
 package metl.model.sensor
 
-import java.io.{BufferedInputStream, BufferedOutputStream}
-import java.sql.{Connection, DriverManager}
+import com.metl.utils.CleanHttpClient
+import com.metl.utils.HTTPResponse
+import com.metl.utils.Http
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.sql.DriverManager
 import java.util.Date
-import javax.naming.Context
-import javax.naming.directory.{InitialDirContext, SearchControls}
-
-import metl.model.GraphableData._
-import com.metl.utils.{CleanHttpClient, HTTPResponse, Http}
-import net.liftweb.common.{Box, Empty, Full, Logger}
-import net.liftweb.util.Helpers.{now, tryo}
-import net.liftweb.util.Helpers._
-import org.apache.commons.net.telnet.TelnetClient
-
-import scala.xml.Node
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeoutException
-
+import javax.naming.Context
+import javax.naming.directory.InitialDirContext
+import javax.naming.directory.SearchControls
+import metl.model.GraphableData._
 import metl.model._
+import net.liftweb.common.Box
+import net.liftweb.common.Empty
+import net.liftweb.common.Full
+import net.liftweb.common.Logger
+import net.liftweb.util.Helpers._
+import net.liftweb.util.Helpers.now
+import net.liftweb.util.Helpers.tryo
+import org.apache.commons.net.telnet.TelnetClient
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.xml.Node
 
 case class ScriptStepResult(body:String,metaData:Map[String,String] = Map.empty[String,String],statusCode:Int = 0,duration:Double = 0.0)
 
@@ -102,7 +108,6 @@ case class ICMPFunctionalCheck(uri:String,ipv6:Boolean = false) extends Function
     case _ => (output:String) => Empty
   }
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val now = new Date().getTime
@@ -157,16 +162,15 @@ object JDBCFunctionalCheckDriverInitializations extends Logger {
 case class JDBCFunctionalCheck(driver:String,url:String,username:String,password:String,query:String,thresholds:List[VerifiableSqlResultSetDefinition] = List.empty[VerifiableSqlResultSetDefinition],connectionCreationTimeout:Long = 10000L) extends FunctionalServiceCheck {
   JDBCFunctionalCheckDriverInitializations.initialize(driver)
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     var output = SQLResultSet(Map.empty[Int,SQLRow])
-    var start = new java.util.Date().getTime
+    val start = new java.util.Date().getTime
     var timeTaken:Box[Double] = Empty
     var errors = List.empty[Throwable]
     try {
-      Await.result(Future(Some({
-        val result = try {
+      Await.result(Future(Option({
+        try {
           val conn = DriverManager.getConnection(url,username,password)//"jdbc:oracle:thin:@%s".format(uri),username,password)
           val statement = conn.createStatement
           var failedVerificationResponses = List.empty[VerificationResponse]
@@ -222,7 +226,6 @@ case class LdapAttr(name:String,values:List[String])
 
 case class LdapFunctionalCheck(host:String,username:String,password:String,searchBase:String,query:String) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val start = new java.util.Date().getTime
@@ -290,8 +293,7 @@ case class LdapFunctionalCheck(host:String,username:String,password:String,searc
 }
 
 case class HttpFunctionalCheck(method:String,url:String,parameters:List[Tuple2[String,String]] = Nil,headers:Map[String,String] = Map.empty[String,String],matcher:HTTPResponseMatcher = HTTPResponseMatchers.empty) extends FunctionalServiceCheck {
-  override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
+  override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {    
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val client = see.map(_.httpClient).getOrElse({
@@ -385,7 +387,7 @@ case class MuninFunctionalCheck(host:String, port:Int, onlyFetch:List[MuninCateg
     map
   }
   override val commandResponseTerminator:Option[String] = Some("\n.\n")
-  protected def generatedDelta[Double](inputName:String,input:Map[String,scala.Double]):Map[String,scala.Double] = {
+  protected def generatedDelta(inputName:String,input:Map[String,scala.Double]):Map[String,scala.Double] = {
     val result = previous.get(inputName).map(po => Map(input.keys.map(ink => {
       val updatedValue = (po(ink),input(ink)) match {
         case (p:scala.Double,i:scala.Double) if (i < p) => {
@@ -415,7 +417,7 @@ case class MuninFunctionalCheck(host:String, port:Int, onlyFetch:List[MuninCateg
   protected def interpretMuninData(tc:TelnetClient):Map[String,Map[String,Double]] = {
     val outputStream = new BufferedOutputStream(tc.getOutputStream)
     val inputStream = new BufferedInputStream(tc.getInputStream)
-    var output = readStream(inputStream)
+    val output = readStream(inputStream)
     if (output.length == 0)
       throw new DashboardException("Munin failed","no response from remote node")
     writeTo("list",outputStream)
@@ -488,7 +490,6 @@ case class JmxFunctionalCheck(jmxServiceUrl:String,credentials:Option[Tuple2[Str
 
   import collection.JavaConverters._
   override def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val interpolatedUrl = new JMXServiceURL(interpolator.interpolate(jmxServiceUrl,environment))
@@ -551,9 +552,6 @@ case class JmxFunctionalCheck(jmxServiceUrl:String,credentials:Option[Tuple2[Str
       ManagementFactory.THREAD_MXBEAN_NAME,
       classOf[ThreadMXBean]
     )
-    val cpuTimeSupported = remoteThreadBean.isThreadCpuTimeSupported && {
-      true
-    }
     val allThreadIds = remoteThreadBean.getAllThreadIds
     val cpuTimes = remoteThreadBean.isThreadCpuTimeSupported match {
       case false => Map.empty[Long,Long]
@@ -613,8 +611,6 @@ case class JmxResults(os:JmxOsSpec,runtime:JmxRuntimeSpec,memory:JmxMemorySpec,t
 abstract class JmxExtractingEnvironmentMutator extends FunctionalServiceCheck {
   protected def mutate(result:JmxResults,environment:Map[String,String],interpolator:Interpolator):Map[String,String]
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.jmxResults.map(jmxResult => fcr.copy(updatedEnvironment = mutate(jmxResult,environment,interpolator))).getOrElse(fcr)
   }
@@ -717,7 +713,6 @@ case class JmxNonHeapMemoryPercentageExtractor(key:String) extends JmxExtracting
 case class ResultValidator(description:String,validateResult:ScriptStepResult => Boolean) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
     val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     if (validateResult(previousResult)){
       fcr
@@ -729,8 +724,6 @@ case class ResultValidator(description:String,validateResult:ScriptStepResult =>
 
 case class EnvironmentValidator(description:String,validateEnvironment:Map[String,String] => Boolean) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     if (validateEnvironment(environment)){
       fcr
@@ -743,15 +736,12 @@ abstract class EnvironmentMutator extends FunctionalServiceCheck {
   protected def mutate(result:ScriptStepResult,environment:Map[String,String],interpolator:Interpolator):Map[String,String]
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
     val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.copy(updatedEnvironment = mutate(previousResult,environment,interpolator))
   }
 }
 case class LastDataExtractor(key:String,dataAttribute:String) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.data.headOption.flatMap(td => td._2.get(interpolator.interpolate(dataAttribute,environment))).map(nv => {
       fcr.copy(updatedEnvironment = environment.updated(interpolator.interpolate(key,environment),interpolator.interpolate(nv.toString,environment)))
@@ -760,8 +750,6 @@ case class LastDataExtractor(key:String,dataAttribute:String) extends Functional
 }
 case class LatestDataExtractor(key:String,dataAttribute:String) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.data.flatMap(td => td._2.get(interpolator.interpolate(dataAttribute,fcr.updatedEnvironment)).map(da => (td._1,da.getAsString))).headOption.map(nv => {
       fcr.copy(updatedEnvironment = environment.updated(interpolator.interpolate(key,fcr.updatedEnvironment),interpolator.interpolate(nv._2.toString,fcr.updatedEnvironment)))
@@ -772,8 +760,6 @@ case class LatestDataExtractor(key:String,dataAttribute:String) extends Function
 abstract class HttpExtractingEnvironmentMutator extends FunctionalServiceCheck {
   protected def mutate(result:HTTPResponse,environment:Map[String,String],interpolator:Interpolator):Map[String,String]
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.httpResult.map(httpResult => fcr.copy(updatedEnvironment = mutate(httpResult,environment,interpolator))).getOrElse(fcr)
   }
@@ -830,8 +816,6 @@ case class HttpExceptionsExtractor(key:String) extends HttpExtractingEnvironment
 abstract class SqlExtractingEnvironmentMutator extends FunctionalServiceCheck with SafelyExtractFromSql {
   protected def mutate(result:SQLResultSet,environment:Map[String,String],interpolator:Interpolator):Map[String,String]
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.sqlResult.map(sqlResult => fcr.copy(updatedEnvironment = mutate(sqlResult,environment,interpolator))).getOrElse(fcr)
   }
@@ -888,8 +872,6 @@ trait SafelyExtractFromLdap {
 abstract class LdapExtractingEnvironmentMutator extends FunctionalServiceCheck with SafelyExtractFromLdap {
   protected def mutate(result:LdapResults,environment:Map[String,String],interpolator:Interpolator):Map[String,String]
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.ldapResults.map(ldapResult => fcr.copy(updatedEnvironment = mutate(ldapResult,environment,interpolator))).getOrElse(fcr)
   }
@@ -937,7 +919,6 @@ abstract class ResultMutator extends FunctionalServiceCheck {
   protected def mutate(result:ScriptStepResult,environment:Map[String,String],interpolator:Interpolator):ScriptStepResult
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
     val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     fcr.copy(result = mutate(previousResult,environment,interpolator))
   }
@@ -967,8 +948,6 @@ case class StatusCodeStorer(key:String) extends EnvironmentMutator {
 
 case class Cond(key:String, value:String, thenFuncs:List[FunctionalServiceCheck], elseFuncs:List[FunctionalServiceCheck]) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     var state:Either[Exception,FunctionalCheckReturn] = Right(fcr)
     if (environment.get(interpolator.interpolate(key,environment)).exists(_ == interpolator.interpolate(value,environment))){
@@ -990,9 +969,6 @@ case class Cond(key:String, value:String, thenFuncs:List[FunctionalServiceCheck]
 
 case class WhileLoop(key:String,value:String,funcs:List[FunctionalServiceCheck]) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
-    val environment = fcr.updatedEnvironment
     var state:Either[Exception,FunctionalCheckReturn] = Right(fcr)
     while (state.right.toOption.exists(s => s.updatedEnvironment.get(interpolator.interpolate(key,s.updatedEnvironment)).exists(_ == interpolator.interpolate(value,s.updatedEnvironment)))){
       funcs.foreach(tf => {
@@ -1007,8 +983,6 @@ case class WhileLoop(key:String,value:String,funcs:List[FunctionalServiceCheck])
 
 case class ForLoop(key:String,start:Int,end:Int,incrementing:Boolean,funcs:List[FunctionalServiceCheck]) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     var counter = start
     var state:Either[Exception,FunctionalCheckReturn] = Right(fcr.copy(updatedEnvironment = environment.updated(key,counter.toString)))
@@ -1035,7 +1009,6 @@ case class ForLoop(key:String,start:Int,end:Int,incrementing:Boolean,funcs:List[
 case class ForeachRegexFromResult(key:String,regex:String,funcs:List[FunctionalServiceCheck]) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
     val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val Pattern = interpolator.interpolate(regex,environment).r.unanchored
     var state:Either[Exception,FunctionalCheckReturn] = Right(fcr)
@@ -1085,9 +1058,6 @@ case class RegexFromResult(key:String,regex:String) extends EnvironmentMutator {
 
 case class Delay(delay:Long,randomize:Boolean = false) extends FunctionalServiceCheck {
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
-    val previousResult = fcr.result
-    val totalDuration = fcr.duration
-    val environment = fcr.updatedEnvironment
     val amount:Long = randomize match {
       case true => ((scala.util.Random.nextInt(200) * delay) / 100L)  // pick a value up to twice above the delay value, and down to zero.
       case false => delay
@@ -1102,7 +1072,6 @@ case class ForeachXPathFromResult(key:String,xPath:String,funcs:List[FunctionalS
   import org.htmlcleaner._
   override protected def innerAct(fcr:FunctionalCheckReturn,interpolator:Interpolator) = {
     val previousResult = fcr.result
-    val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     var state:Either[Exception,FunctionalCheckReturn] = Right(fcr)
     val cleaned = new HtmlCleaner().clean(previousResult.body)
