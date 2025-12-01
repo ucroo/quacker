@@ -7,13 +7,12 @@ import net.liftweb.common._
 import http._
 import js._
 import JsCmds._
-import json.JsonDSL._
 import json.JsonAST._
 import util._
 import Helpers._
+import scala.language.postfixOps
 
 import xml._
-import java.util.Date
 
 import net.liftweb.http.js.JE.Call
 
