@@ -1,6 +1,14 @@
 <appConf>
-        <hostname>https://local.quacker.pathify.com:8444</hostname>
+        <hostname>http://localhost:8555</hostname>
         <authenticator>
                 <mockAuthenticator />
         </authenticator>
+        <validUsers>
+                <validUser>
+                        <authcate>unauthorized</authcate>
+                        <servicePermissions>
+                                <!-- Empty means no restrictions - user can access everything -->
+                        </servicePermissions>
+                </validUser>
+        </validUsers>
 </appConf>
