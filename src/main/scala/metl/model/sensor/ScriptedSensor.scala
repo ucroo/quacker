@@ -149,7 +149,7 @@ object JDBCFunctionalCheckDriverInitializations extends Logger {
     try {
       this.synchronized {
         if (!initializedDrivers.contains(driver)){
-          Class.forName(driver).newInstance()
+          Class.forName(driver).getDeclaredConstructor().newInstance()
           initializedDrivers = driver :: initializedDrivers
         }
       }

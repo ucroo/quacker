@@ -143,7 +143,7 @@ case class VerifiableSqlResultSetDefinition(rowBehaviour:String,matchers:Map[Str
 }
 
 object OracleSetup {
-  Class.forName("oracle.jdbc.OracleDriver").newInstance()
+  Class.forName("oracle.jdbc.OracleDriver").getDeclaredConstructor().newInstance()
   def initialize = {}
 }
 
@@ -207,7 +207,7 @@ case class OracleSensor(metadata:SensorMetaData, uri:String, username:String, pa
 }
 
 object MySQLSetup {
-  Class.forName("com.mysql.jdbc.Driver").newInstance()
+  Class.forName("com.mysql.jdbc.Driver").getDeclaredConstructor().newInstance()
   def initialize = {}
 }
 
