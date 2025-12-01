@@ -58,7 +58,10 @@ case class PingICMPSensor(metadata:SensorMetaData, uri:String, ipv6:Boolean = fa
   override val pollInterval = time
   failureTolerance = 3
   def status = {
-    val pingProcess = Runtime.getRuntime().exec(pingCmd)
+    //val pingProcess = Runtime.getRuntime().exec()
+        //TODO Dodge city
+    val pb = new ProcessBuilder()
+    val pingProcess = pb.command(pingCmd).start()
     val inputStream = new BufferedInputStream(pingProcess.getInputStream)
     val errorStream = new BufferedInputStream(pingProcess.getErrorStream)
     var output = ""

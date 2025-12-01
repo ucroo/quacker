@@ -111,7 +111,9 @@ case class ICMPFunctionalCheck(uri:String,ipv6:Boolean = false) extends Function
     val totalDuration = fcr.duration
     val environment = fcr.updatedEnvironment
     val now = new Date().getTime
-    val pingProcess = Runtime.getRuntime().exec(pingCmd(interpolator.interpolate(uri,environment)))
+    val pb = new ProcessBuilder()
+    //TODO Dodge city
+    val pingProcess = pb.command(pingCmd(interpolator.interpolate(uri,environment))).start()
     val inputStream = new BufferedInputStream(pingProcess.getInputStream)
     val errorStream = new BufferedInputStream(pingProcess.getErrorStream)
     var output = ""
