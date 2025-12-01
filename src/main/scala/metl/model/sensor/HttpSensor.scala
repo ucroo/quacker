@@ -6,6 +6,7 @@ import net.liftweb.common.Full
 import net.liftweb.util.Helpers._
 
 import scala.xml.Node
+import java.util.concurrent.atomic.AtomicReference
 
 object HTTPResponseMatchers extends ConfigFileReader {
   def configureFromXml(n:Node):HTTPResponseMatcher = {
@@ -101,15 +102,18 @@ class HTTPResponseMatcher{
 
 case class HttpSensor(metadata:SensorMetaData, uri:String, headers:List[Tuple2[String,String]] = List.empty[Tuple2[String,String]], matcher:HTTPResponseMatcher = HTTPResponseMatchers.default, time:TimeSpan = 5 seconds) extends Sensor(metadata){
   override val pollInterval = time
+  
   def getClient = Http.getClient
-  var client = getClient
-  headers.foreach(h => client.addHttpHeader(h._1,h._2))
+
+  private lazy val client = new AtomicReference(getClient)
+
   override def resetEnvironment = {
-    client = getClient
-    headers.foreach(h => client.addHttpHeader(h._1,h._2))
+    client.set(getClient)
+    headers.foreach(h => client.get().addHttpHeader(h._1,h._2))
   }
+  
   def status = {
-    val response = client.respondToResponse(client.getExpectingHTTPResponse(uri))
+    val response = client.get().respondToResponse(client.get().getExpectingHTTPResponse(uri))
     val verificationResponse = matcher.verify(response)
     if (!verificationResponse.success){
       throw new DashboardException("HTTP Verification failed",verificationResponse.errors.mkString("\r\n"))
@@ -117,18 +121,23 @@ case class HttpSensor(metadata:SensorMetaData, uri:String, headers:List[Tuple2[S
     (response,Full(response.duration.toDouble))
   }
   override def performCheck = succeed(status._1.toString,status._2)
+
+    //init sensor
+  resetEnvironment
 }
-case class HttpSensorWithBasicAuth(metadata:SensorMetaData, uri:String, username:String, password:String, headers:List[Tuple2[String,String]] = List.empty[Tuple2[String,String]], matcher:HTTPResponseMatcher = HTTPResponseMatchers.default, time:TimeSpan = 5 seconds) extends Sensor(metadata){
+case class HttpSensorWithBasicAuth(metadata:SensorMetaData, uri:String, username:String, password:String, headers:List[Tuple2[String,String]] , matcher:HTTPResponseMatcher , time:TimeSpan) extends Sensor(metadata){
+
+ def getClient = Http.getAuthedClient(username,password)
+  
+  private lazy val client = new AtomicReference(getClient)
   override val pollInterval = time
-  def getClient = Http.getAuthedClient(username,password)
-  var client = getClient
-  headers.foreach(h => client.addHttpHeader(h._1,h._2))
+ 
   override def resetEnvironment = {
-    client = getClient
-    headers.foreach(h => client.addHttpHeader(h._1,h._2))
+    client.set(getClient)
+    headers.foreach(h => client.get().addHttpHeader(h._1,h._2))
   }
   def status = {
-    val response = client.respondToResponse(client.getExpectingHTTPResponse(uri))
+    val response = client.get().respondToResponse(client.get().getExpectingHTTPResponse(uri))
     val verificationResponse = matcher.verify(response)
     if (!verificationResponse.success){
       throw new DashboardException("HTTPwithAuth Verification failed",verificationResponse.errors.mkString("\r\n"))
@@ -136,4 +145,7 @@ case class HttpSensorWithBasicAuth(metadata:SensorMetaData, uri:String, username
     (response,Full(response.duration.toDouble))
   }
   override def performCheck = succeed(status._1.toString,status._2)
+
+  //init sensor
+  resetEnvironment
 }

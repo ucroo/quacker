@@ -277,6 +277,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
     case _ => {}
   }
 }
+
 case class CheckUnexceptional(metadata:SensorMetaData, condition:Function0[Any], time:TimeSpan = 5 seconds) extends Sensor(metadata){
   override val pollInterval = time
   def status = condition()
