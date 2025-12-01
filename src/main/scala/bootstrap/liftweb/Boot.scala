@@ -70,9 +70,24 @@ class Boot extends Logger {
 
     LiftRules.loggedInTest = Full(() => User.loggedIn_?)
 
+    // Configure Content Security Policy to allow inline styles
+    // This relaxes the default restrictive CSP that Lift applies
+    LiftRules.securityRules = () => {
+      SecurityRules(
+        content = Some(ContentSecurityPolicy(
+          defaultSources = List(ContentSourceRestriction.Self),
+          scriptSources = List(ContentSourceRestriction.Self, ContentSourceRestriction.UnsafeInline, ContentSourceRestriction.UnsafeEval),
+          styleSources = List(ContentSourceRestriction.Self, ContentSourceRestriction.UnsafeInline),
+          fontSources = List(ContentSourceRestriction.Self),
+          imageSources = List(ContentSourceRestriction.Self),
+          connectSources = List(ContentSourceRestriction.Self)
+        ))
+      )
+    }
+
     metl.comet.DashboardServer
     ()
-  
+
   }
 
   /**
