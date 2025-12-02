@@ -20,7 +20,7 @@
 
   <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
     <Set name="secureScheme">https</Set>
-    <Set name="securePort"><Property name="jetty.secure.port" default="8444" /></Set>
+    <Set name="securePort"><Property name="jetty.secure.port" default="8555" /></Set>
     <Set name="outputBufferSize"><Property name="jetty.output.buffer.size" default="32768" /></Set>
     <Set name="requestHeaderSize"><Property name="jetty.request.header.size" default="8192" /></Set>
     <Set name="responseHeaderSize"><Property name="jetty.response.header.size" default="8192" /></Set>
@@ -136,7 +136,7 @@
           </Array>
         </Arg>
         <Set name="host"><Property name="jetty.host" /></Set>
-        <Set name="port"><Property name="https.port" default="8444" /></Set>
+        <Set name="port"><Property name="https.port" default="8555" /></Set>
         <Set name="idleTimeout"><Property name="jetty.ssl.idleTimeout" default="30000"/></Set>
         <Set name="acceptorPriorityDelta" property="jetty.ssl.acceptorPriorityDelta"/>
         <Set name="acceptQueueSize" property="jetty.ssl.acceptQueueSize"/>
@@ -167,7 +167,7 @@
           </Array>
         </Arg>
         <Set name="host"><Property name="jetty.host" /></Set>
-        <Set name="port"><Property name="jetty.port" default="8081" /></Set>
+        <Set name="port"><Property name="jetty.port" default="8090" /></Set>
         <Set name="idleTimeout"><Property name="http.timeout" default="30000"/></Set>
       </New>
     </Arg>

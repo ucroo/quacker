@@ -1,5 +1,5 @@
 <appConf>
-  <hostname>https://localhost:8444</hostname>
+  <hostname>https://localhost:8555</hostname>
   <authenticator>
     <mockAuthenticator />
   </authenticator>

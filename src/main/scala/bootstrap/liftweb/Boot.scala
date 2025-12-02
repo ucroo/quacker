@@ -1,12 +1,12 @@
 package bootstrap.liftweb
 
-import _root_.metl.model._
-import _root_.net.liftweb.common._
-import _root_.net.liftweb.http._
-import _root_.net.liftweb.http.provider._
-import _root_.net.liftweb.sitemap.Loc._
-import _root_.net.liftweb.sitemap._
-import _root_.net.liftweb.util._
+import metl.model._
+import net.liftweb.common._
+import net.liftweb.http._
+import net.liftweb.http.provider._
+import net.liftweb.sitemap.Loc._
+import net.liftweb.sitemap._
+import net.liftweb.util._
 import Helpers._
 import metl.view.{DebugToolsRestHelper, ProbeRestHelper, SystemRestHelper}
 
@@ -15,8 +15,9 @@ import metl.view.{DebugToolsRestHelper, ProbeRestHelper, SystemRestHelper}
   * to modify Lift's environment.
   */
 class Boot extends Logger {
-  implicit val formats = GraphableData.formats
+ 
   def boot {
+    info(s"STARTING LIFT BOOT")
     sys.props.put("h2.implicitRelativePath", "true")
     debug("Setting application mode %s".format(Props.mode))
     Globals.isDevMode = Props.mode match {
@@ -80,6 +81,7 @@ class Boot extends Logger {
     LiftRules.loggedInTest = Full(() => User.loggedIn_?)
 
     metl.model.Globals.startup
+    info(s"FINISHED LIFT BOOT")
   }
 
   /**

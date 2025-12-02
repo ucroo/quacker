@@ -6,7 +6,14 @@ name                      := "app.stackableregiments.quacker"
 version       := "develop"
 scalaVersion  := "2.12.20"
 
+  val liftVersion      = "3.5.0"
+  val shiroVersion     = "1.2.2"
+  val scalaTestVersion = "3.3.0-SNAP4"
+  val otelVersion        = "1.56.0"
+  val otelAgentVersion   = "2.22.0"
+  val logbackVersion   = "1.5.21"
 val jettyVersion = "11.0.23"
+  val slf4jVersion               = "2.0.17"
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules"     %% "scala-xml" % VersionScheme.Always
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
@@ -84,14 +91,15 @@ val otelAgentJar = Def.task {
     .getOrElse("")
 }
 
-
+//  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
 Jetty / javaOptions ++= Seq(
+
   "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
-  s"-Dotel.javaagent.enabled=true",
-  "-Dotel.instrumentation.jetty.enabled=true",
-  "-Dotel.instrumentation.common.default-enabled=true",
-  "-Dotel.instrumentation.opentelemetry-api.enabled=true",
-  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true",
+  s"-Dotel.javaagent.enabled=false",
+  "-Dotel.instrumentation.jetty.enabled=false",
+  "-Dotel.instrumentation.common.default-enabled=false",
+  "-Dotel.instrumentation.opentelemetry-api.enabled=false",
+  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=false",
   "-Xmx%sM".format(jettyMem),
   "-Xms%sM".format(jettyMem),
   "-XX:ActiveProcessorCount=%s".format(jettyCpus),
@@ -115,23 +123,18 @@ Jetty / javaOptions ++= Seq(
   s"-javaagent:${otelAgentJar.value}"
 )
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
-Jetty / containerPort := 8444
+Jetty / containerPort := 8555
 Jetty / containerArgs := Seq("--config", "jetty.xml")
 
 
 
 
 libraryDependencies ++= {
-  val liftVersion      = "3.4.3"
-  val shiroVersion     = "1.2.2"
-  val scalaTestVersion = "3.3.0-SNAP4"
-  val otelVersion        = "1.56.0"
-  val otelAgentVersion   = "2.22.0"
 
   Seq(
     "net.liftweb"           %% "lift-webkit"             % liftVersion,
     "net.liftweb"           %% "lift-mapper"             % liftVersion,
-    "ch.qos.logback"         % "logback-classic"         % "1.2.9",
+    "ch.qos.logback"         % "logback-classic"         % logbackVersion,
     "org.specs2"            %% "specs2-core"             % "3.9.4" % "test",
     "com.h2database"         % "h2"                      % "1.4.187",
     "com.github.dakatsuka"  %% "akka-http-oauth2-client" % "0.1.0",
@@ -268,7 +271,9 @@ libraryDependencies ++= {
     .exclude("log4j", "log4j")
 )
 
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
+libraryDependencies ++= Seq(
+"org.slf4j"        % "slf4j-api"                                % slf4jVersion,
+  "ch.qos.logback" % "logback-classic" % logbackVersion)
 
 scalacOptions  ++= Seq(
   "-language:existentials",
