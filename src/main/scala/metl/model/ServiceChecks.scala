@@ -132,7 +132,6 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 		.put("name", metadata.name)
 		.put("serviceName", metadata.serviceName)
 		.put("serviceLabel", metadata.serviceLabel)
-		.put("name", metadata.name)
 		.build()
 	private val callback:Consumer[ObservableLongMeasurement] = new Consumer[ObservableLongMeasurement] {
 		override def accept(measurement: ObservableLongMeasurement): Unit = {

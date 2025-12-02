@@ -3,12 +3,4 @@
         <authenticator>
                 <mockAuthenticator />
         </authenticator>
-        <validUsers>
-                <validUser>
-                        <authcate>unauthorized</authcate>
-                        <servicePermissions>
-                                <!-- Empty means no restrictions - user can access everything -->
-                        </servicePermissions>
-                </validUser>
-        </validUsers>
 </appConf>

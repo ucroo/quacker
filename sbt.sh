@@ -5,9 +5,9 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 # Check if sbt is installed via Homebrew or use a direct download
 if command -v sbt >/dev/null 2>&1; then
-  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/configuration.local.xml -Dquacker.configDirectoryLocation=$ "$@"
+  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/application.xml -Dquacker.configDirectoryLocation=config"$@"
 else
   echo "sbt not found. Installing via Homebrew..."
   brew install sbt
-  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/configuration.local.xml -Dquacker.configDirectoryLocation=$ "$@"
+  sbt -Drun.mode=development -Dlogback.configurationFile=config/logback.xml -Dmetlx.configurationFile=config/application.xml -Dquacker.configDirectoryLocation=monitoringDashboardConfig "$@"
 fi
