@@ -4,7 +4,7 @@ git.useGitDescribe := true
 
 name := "app.stackableregiments.quacker"
 version in ThisBuild := "develop"
-scalaVersion in ThisBuild := "2.12.15"
+scalaVersion in ThisBuild := "2.12.20"
 
 val jettyVersion               = "11.0.23"
 
