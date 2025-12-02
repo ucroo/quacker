@@ -52,7 +52,7 @@ reporterConfig := reporterConfig.value.withShowLegend(true)
 
 //wartremoverErrors ++= Warts.unsafe
 
-wartremoverWarnings ++= Warts.all
+//wartremoverWarnings ++= Warts.all
 
 enablePlugins(JettyPlugin)
 
@@ -91,11 +91,10 @@ val otelAgentJar = Def.task {
     .getOrElse("")
 }
 
-//  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
 Jetty / javaOptions ++= Seq(
 
   "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
-  s"-Dotel.javaagent.enabled=false",
+  "-Dotel.javaagent.enabled=false",
   "-Dotel.instrumentation.jetty.enabled=false",
   "-Dotel.instrumentation.common.default-enabled=false",
   "-Dotel.instrumentation.opentelemetry-api.enabled=false",
@@ -120,13 +119,12 @@ Jetty / javaOptions ++= Seq(
   "-Dquacker.appConfigDirectoryLocation=appConf",
   "-Drun.mode=production",
   "-Dlogback.configurationFile=appConf/logback.xml",
+  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
   s"-javaagent:${otelAgentJar.value}"
 )
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
-Jetty / containerPort := 8555
+Jetty / containerPort := 8666
 Jetty / containerArgs := Seq("--config", "jetty.xml")
-
-
 
 
 libraryDependencies ++= {
@@ -273,7 +271,9 @@ libraryDependencies ++= {
 
 libraryDependencies ++= Seq(
 "org.slf4j"        % "slf4j-api"                                % slf4jVersion,
-  "ch.qos.logback" % "logback-classic" % logbackVersion)
+  "ch.qos.logback" % "logback-classic" % logbackVersion,
+    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
+  )
 
 scalacOptions  ++= Seq(
   "-language:existentials",
