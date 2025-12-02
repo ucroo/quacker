@@ -1,13 +1,40 @@
-<configuration debug="false" scan="true" >
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <Pattern>LOG %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
-    </encoder>
-  </appender>
-	<logger name="net.liftweb.util.Mailer" level="trace" />
-	<logger name="metl.model.SimpleMailer" level="trace" />
-	<logger name="metl.model.ErrorMailer" level="trace" />
-  <root level="WARN">
-    <appender-ref ref="STDOUT"/>
-  </root>
+<configuration debug="true">
+
+<condition class="code.core.logback.PropertyExistsCondition">
+    <key>GOOGLE_CLOUD_PROJECT</key>
+  </condition>
+  <if>
+    <then>
+      <appender name="CLOUD" class="com.google.cloud.logging.logback.LoggingAppender">
+        <property name="projectId" value="${projectId:-${GOOGLE_CLOUD_PROJECT}}"/>
+        <flushLevel>WARN</flushLevel>
+      </appender>
+
+      <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="CLOUD"/>
+      </appender>
+
+      <root level="INFO">
+        <appender-ref ref="OTEL"/>
+      </root>
+    </then>
+    <else>
+      <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+          <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%kvp- %msg%n</pattern>
+        </encoder>
+      </appender>
+    
+      <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="CONSOLE"/>
+      </appender>
+      
+	    <logger name="net.liftweb.util.Mailer" level="trace" />
+	    <logger name="metl.model.SimpleMailer" level="trace" />
+	    <logger name="metl.model.ErrorMailer" level="trace" />
+      <root level="WARN">
+        <appender-ref ref="OTEL"/>
+      </root>
+    </else>
+  </if>
 </configuration>

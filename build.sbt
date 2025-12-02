@@ -115,11 +115,11 @@ Jetty / javaOptions ++= Seq(
   s"-javaagent:${otelAgentJar.value}"
 )
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
-Jetty / containerPort := 8555
+Jetty / containerPort := 8444
 Jetty / containerArgs := Seq("--config", "jetty.xml")
 
 
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
+
 
 libraryDependencies ++= {
   val liftVersion      = "3.4.3"
@@ -267,6 +267,8 @@ libraryDependencies ++= {
     .exclude("com.sun.jmx", "jmxri")
     .exclude("log4j", "log4j")
 )
+
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
 
 scalacOptions  ++= Seq(
   "-language:existentials",

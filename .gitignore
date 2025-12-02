@@ -19,3 +19,4 @@ null
 .vscode
 metals.sbt
 .DS_Store
+.metals
