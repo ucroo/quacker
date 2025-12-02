@@ -13,6 +13,9 @@ import net.liftweb.util.Helpers._
 import net.liftweb.util._
 import scala.language.postfixOps
 import scala.xml._
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
 
 case class DashboardException(reason:String,detail:String,exceptions:List[Exception] = Nil) extends Exception(reason){
 	override def toString:String = {
@@ -122,6 +125,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 	private lazy val init = GlobalOpenTelemetry.get()
 	private lazy val sensorErrorMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.failures").ofLongs().build()
 	private lazy val sensorSuccessMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.sucesses").ofLongs().build()
+	private lazy val gaugeNumber = new AtomicLong(0)
 	private lazy val metricAttributes = 
 		Attributes
 		.builder()
@@ -130,6 +134,17 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 		.put("serviceLabel", metadata.serviceLabel)
 		.put("name", metadata.name)
 		.build()
+	private val callback:Consumer[ObservableLongMeasurement] = new Consumer[ObservableLongMeasurement] {
+		override def accept(measurement: ObservableLongMeasurement): Unit = {
+			info(s"gauge callback for ${ metadata.name} ${gaugeNumber.get()}")
+			measurement.record(gaugeNumber.get(), metricAttributes)
+		}
+	}
+
+	private val gaugeSensor = init.getMeter(_clazzName).gaugeBuilder("metl.model.sensor.gauge").ofLongs().buildWithCallback(callback)
+
+	info(s"we have a gauge now $gaugeSensor using a callback to  record ${gaugeNumber.get()}")
+
 	override val serviceName: String = metadata.serviceName
 	override val serviceLabel: String = metadata.serviceLabel
 	override val serverName: String = metadata.serverName
@@ -177,7 +192,8 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
     Schedule.schedule(this,Check,interval)
   }
   def fail(why:String,detail:String = "",timeTaken:Box[Double] = Empty) = {
-				sensorErrorMetric.record(1,metricAttributes)
+			sensorErrorMetric.record(1,metricAttributes)
+		val _ =	gaugeNumber.decrementAndGet()
 		val lastUp = lastUptime
 		val now = updatedTime(success = false)
 		lastStatus = Full(false)
@@ -194,6 +210,7 @@ abstract class Sensor(metadata:SensorMetaData) extends LiftActor with VisualElem
 	}
   def succeed(why:String,timeTaken:Box[Double] = Empty,data:List[Tuple2[Long,Map[String,GraphableDatum]]] = Nil) = {
 		sensorSuccessMetric.record(1,metricAttributes)
+		val _ = gaugeNumber.incrementAndGet()
 		val now = new Date()
 		val durationOrTimeSinceStart = calculateCheckDuration(timeTaken)
 		checkDuration = Full(durationOrTimeSinceStart)
