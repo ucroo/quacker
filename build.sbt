@@ -9,7 +9,7 @@ val servletVersion     = "2.5"
 val jettyVersion       = "9.4.54.v20240208"
 val otelVersion        = "1.56.0"
 val otelAgentVersion   = "2.22.0"
-val logbackVersion             = "1.5.21"
+val logbackVersion     = "1.5.21"
 
 
 
@@ -41,6 +41,7 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % logbackVersion
 libraryDependencies ++= {
 
   Seq(
+    "org.slf4j"                     % "log4j-over-slf4j"     % "1.7.36",
     "commons-net"                   % "commons-net"          % "2.0",
     "org.snmp4j"                    % "snmp4j"               % "2.5.11",
     "org.mongodb"                   % "mongo-java-driver"    % "2.6.3",
