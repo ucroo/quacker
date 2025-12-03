@@ -1,0 +1,8 @@
+<configuration>
+  <validUsers>
+    <validUser>
+      <name>unauthenticated access</name>
+      <authcate>forbidden</authcate>
+    </validUser>
+  </validUsers>
+</configuration>

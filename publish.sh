@@ -33,7 +33,7 @@ sbt.sh clean
 sbt.sh compile
 sbt.sh package
 mkdir -p webapps
-cp target/scala-2.11/*.war webapps/quacker.war
+cp target/scala-2.12/*.war webapps/quacker.war
 
 #Build the docker image.  This builds the project as well.
 docker build -t  $VERSION .

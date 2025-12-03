@@ -47,26 +47,26 @@ class Boot extends Logger {
     LiftRules.addToPackages("metl")
 
     // Build SiteMap
-    def sitemap() =
-      SiteMap(
-        Menu("Home") / "index" >> User.AddUserMenusAfter, // Simple menu form
-        Menu("Flexible") / "flexible",
-        Menu("Simple") / "simple",
-        // Menu with special Link
-        Menu(
-          Loc("Static",
-              Link(List("static"), true, "/static/index"),
-              "Static Content"))
-      )
-
-    LiftRules.setSiteMapFunc(() => User.sitemapMutator(sitemap()))
+   // def sitemap() =
+   //   SiteMap(
+   //     Menu("Home") / "index" >> User.AddUserMenusAfter, // Simple menu form
+   //     Menu("Flexible") / "flexible",
+   //     Menu("Simple") / "simple",
+   //     // Menu with special Link
+   //     Menu(
+   //       Loc("Static",
+   //           Link(List("static"), true, "/static/index"),
+   //           "Static Content"))
+   //   )
+//
+   // LiftRules.setSiteMapFunc(() => User.sitemapMutator(sitemap()))
 
     // added temporarily (for Lift 3.4.0, where the resource server appears to be aiming for non-existent *-min.js files)
-    ResourceServer.pathRewriter = {
-      case anything => anything
-    }
+   // ResourceServer.pathRewriter = {
+   //   case anything => anything
+   // }
 
-    LiftRules.securityRules = () => SecurityRules(content = None)
+    //LiftRules.securityRules = () => SecurityRules(content = None)
 
     // Show the spinny image when an Ajax call starts
     LiftRules.ajaxStart = Full(

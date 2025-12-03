@@ -1,85 +1,62 @@
-versionWithGit
-git.baseVersion    := "2.0"
-git.useGitDescribe := true
-
-name                      := "app.stackableregiments.quacker"
-version       := "develop"
-scalaVersion  := "2.12.20"
-
-  val liftVersion      = "3.5.0"
-  val shiroVersion     = "1.2.2"
-  val scalaTestVersion = "3.3.0-SNAP4"
-  val otelVersion        = "1.56.0"
-  val otelAgentVersion   = "2.22.0"
-  val logbackVersion   = "1.5.21"
-val jettyVersion = "11.0.23"
-  val slf4jVersion               = "2.0.17"
-
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules"     %% "scala-xml" % VersionScheme.Always
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
-ThisBuild / evictionErrorLevel                                       := Level.Info
-
 organization := "stackableRegiments"
-
-val apiRoot = "."
-
-lazy val root = (project in file("."))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(
-    buildInfoKeys := Seq[BuildInfoKey](
-      name,
-      version,
-      scalaVersion,
-      sbtVersion,
-      BuildInfoKey.action("buildTime") {
-        System.currentTimeMillis
-      },
-      BuildInfoKey.action("gitBranch") {
-        git.gitCurrentBranch.value
-      },
-      BuildInfoKey.action("gitCommit") {
-        git.gitHeadCommit.value
-      }
-    ),
-    buildInfoPackage := "code.buildInfo"
-  )
-
-ThisBuild / scalafmtOnCompile := false
-
-reporterConfig := reporterConfig.value.withColumnNumbers(true)
-
-reporterConfig := reporterConfig.value.withShowLegend(true)
+name              := "app.stackableregiments.quacker"
+version           := "develop"
+scalaVersion      := "2.12.20"
+scalafmtOnCompile := false
+reporterConfig    := reporterConfig.value.withColumnNumbers(true)
+reporterConfig    := reporterConfig.value.withShowLegend(true)
+compileOrder      := CompileOrder.ScalaThenJava
+logLevel          := Level.Info
 
 //wartremoverErrors ++= Warts.unsafe
 
 //wartremoverWarnings ++= Warts.all
 
+val liftVersion      = "3.5.0"
+val shiroVersion     = "1.2.2"
+val scalaTestVersion = "3.3.0-SNAP4"
+val otelVersion      = "1.56.0"
+val otelAgentVersion = "2.22.0"
+val logbackVersion   = "1.5.21"
+val jettyVersion     = "11.0.23"
+val slf4jVersion     = "2.0.17"
+
+libraryDependencySchemes += "org.scala-lang.modules"     %% "scala-xml" % VersionScheme.Always
+libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
+evictionErrorLevel                                       := Level.Info
+
+
+enablePlugins(BuildInfoPlugin)
 enablePlugins(JettyPlugin)
 
-
-compileOrder := CompileOrder.ScalaThenJava
-
-
-
-//logLevel  := Level.Error
-logLevel  := Level.Info
-
-resolvers  ++= Seq(
-  DefaultMavenRepository,
-  Resolver.sonatypeRepo("public"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("staging"),
-  Resolver.typesafeIvyRepo("releases"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  "maven" at "https://mvnrepository.com/artifact/",
-  "IHTSDO" at "https://maven.ihtsdotools.org/content/repositories/releases/",
-  "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-  "releases" at "https://oss.sonatype.org/content/repositories/releases",
-  "mavenCentral" at "https://mvnrepository.com/artifact"
+buildInfoKeys := Seq[BuildInfoKey](
+  name,
+  version,
+  scalaVersion,
+  sbtVersion,
+  BuildInfoKey.action("buildTime") {
+    System.currentTimeMillis
+  },
+  BuildInfoKey.action("gitBranch") {
+    git.gitCurrentBranch.value
+  },
+  BuildInfoKey.action("gitCommit") {
+    git.gitHeadCommit.value
+  }
 )
 
-enablePlugins(JettyPlugin)
+buildInfoPackage := "code.buildInfo"
+
+//resolvers ++= Seq(
+//  DefaultMavenRepository,
+//  Resolver.typesafeIvyRepo("releases"),
+//  Resolver.typesafeIvyRepo("snapshots"),
+//  "maven" at "https://mvnrepository.com/artifact/",
+//  "IHTSDO" at "https://maven.ihtsdotools.org/content/repositories/releases/",
+//  "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+//  "releases" at "https://oss.sonatype.org/content/repositories/releases",
+//  "mavenCentral" at "https://mvnrepository.com/artifact"
+//)
 
 val jettyMem  = sys.env.get("SBT_JETTY_MEM").getOrElse("2048")
 val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
@@ -92,7 +69,6 @@ val otelAgentJar = Def.task {
 }
 
 Jetty / javaOptions ++= Seq(
-
   "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
   "-Dotel.javaagent.enabled=false",
   "-Dotel.instrumentation.jetty.enabled=false",
@@ -114,21 +90,18 @@ Jetty / javaOptions ++= Seq(
   "java.base/java.util=ALL-UNNAMED",
   "-Djavax.net.ssl.keyStore=keystore.jks",
   "-Djavax.net.ssl.keyStorePassword=changeit",
-  "-Dorg.eclipse.jetty.util.log.class=org.apache.logging.log4j.appserver.jetty.Log4j2Logger",
   "-Dquacker.configDirectoryLocation=monitoringDashboardConfig",
   "-Dquacker.appConfigDirectoryLocation=appConf",
   "-Drun.mode=production",
   "-Dlogback.configurationFile=appConf/logback.xml",
-  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
   s"-javaagent:${otelAgentJar.value}"
 )
+
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
 Jetty / containerPort := 8666
 Jetty / containerArgs := Seq("--config", "jetty.xml")
 
-
 libraryDependencies ++= {
-
   Seq(
     "net.liftweb"           %% "lift-webkit"             % liftVersion,
     "net.liftweb"           %% "lift-mapper"             % liftVersion,
@@ -145,15 +118,15 @@ libraryDependencies ++= {
     "org.eclipse.jetty"      % "jetty-webapp"            % jettyVersion,
     "org.eclipse.jetty"      % "jetty-server"            % jettyVersion,
     "org.eclipse.jetty"      % "jetty-util"              % jettyVersion,
-    "javax.mail"            % "javax.mail-api"     % "1.6.2",
-    "com.sun.mail"          % "javax.mail"         % "1.6.2",
-    "com.hacklanta"        %% "lift-formality_3.3" % "1.2.0",
-    "io.github.classgraph"  % "classgraph"         % "4.6.18",
-    "com.sksamuel.scrimage" % "scrimage-core"      % "4.0.6",
-    "com.rklaehn"           % "radixtree_2.12"     % "0.5.1",
-    "com.joestelmach"       % "natty"              % "0.11",
+    "javax.mail"             % "javax.mail-api"          % "1.6.2",
+    "com.sun.mail"           % "javax.mail"              % "1.6.2",
+    "com.hacklanta"         %% "lift-formality_3.3"      % "1.2.0",
+    "io.github.classgraph"   % "classgraph"              % "4.6.18",
+    "com.sksamuel.scrimage"  % "scrimage-core"           % "4.0.6",
+    "com.rklaehn"            % "radixtree_2.12"          % "0.5.1",
+    "com.joestelmach"        % "natty"                   % "0.11",
     // for resource loading
-    "org.springframework" % "spring-core" % "5.1.5.RELEASE",
+    //"org.springframework" % "spring-core" % "5.1.5.RELEASE",
     // for testing
     "org.specs2"     %% "specs2-core"              % "3.9.5"          % Test,
     "org.scalatest"  %% "scalatest"                % scalaTestVersion % Test,
@@ -258,24 +231,25 @@ libraryDependencies ++= {
     /*OAuth authentication*/
     "org.pac4j" % "pac4j-oauth" % "1.7.0",
     /*Open telemetry*/
-    "io.opentelemetry"              % "opentelemetry-api"       % otelVersion,
-    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime"
+    "io.opentelemetry"           % "opentelemetry-api"       % otelVersion,
+    "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % otelAgentVersion % "runtime"
   )
-}.map(
-  _.excludeAll(ExclusionRule(organization = "org.slf4j"))
-    .exclude("com.sun.jdmk", "jmxtools")
-    .exclude("javax.jms", "jms")
-    .exclude("com.sun.jmx", "jmxri")
-    .exclude("log4j", "log4j")
-)
+}
+//.map(
+//  _.excludeAll(ExclusionRule(organization = "org.slf4j"))
+//    .exclude("com.sun.jdmk", "jmxtools")
+//    .exclude("javax.jms", "jms")
+//    .exclude("com.sun.jmx", "jmxri")
+//    .exclude("log4j", "log4j")
+//)
 
 libraryDependencies ++= Seq(
-"org.slf4j"        % "slf4j-api"                                % slf4jVersion,
-  "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
-  )
+  "org.slf4j"                        % "slf4j-api"                     % slf4jVersion,
+  "ch.qos.logback"                   % "logback-classic"               % logbackVersion,
+  "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
+)
 
-scalacOptions  ++= Seq(
+scalacOptions ++= Seq(
   "-language:existentials",
   "-deprecation",
   "-unchecked",
@@ -302,52 +276,13 @@ scalacOptions  ++= Seq(
 // set Ivy logging to be at the highest level
 ivyLoggingLevel := UpdateLogging.Full
 
-// disable updating dynamic revisions (including -SNAPSHOT versions)
-offline := false
 
 // set the prompt (for this build) to include the project id.
-shellPrompt  := { state =>
+shellPrompt := { state =>
   Project.extract(state).currentRef.project + "> "
 }
 
-// set the prompt (for the current project) to include the username
-shellPrompt := { state =>
-  System.getProperty("user.name") + "> "
-}
-
-// disable printing timing information, but still print [success]
-showTiming := true
-
-// disable printing a message indicating the success or failure of running a task
-showSuccess := true
-
-// change the format used for printing task completion time
-timingFormat := {
-  import java.text.DateFormat
-  DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-}
 
 testOptions in Test += Tests.Argument("-eI")
-
-// don't aggregate clean (See FullConfiguration for aggregation details)
-aggregate in clean := false
-
-// only show warnings and errors on the screen for compilations.
-//  this applies to both test:compile and compile and is Info by default
-logLevel in compile := Level.Warn
-
-// only show warnings and errors on the screen for all tasks (the default is Info)
-//  individual tasks can then be more verbose using the previous setting
-logLevel := Level.Warn
-
-// only store messages at info and above (the default is Debug)
-//   this is the logging level for replaying logging with 'last'
-//persistLogLevel := Level.Debug
-
-// only show 10 lines of stack traces
-traceLevel := 10
-
-// only show stack traces up to the first sbt stack frame
-traceLevel := 0
 
 credentials += Credentials(Path.userHome / ".ivy2" / "ivy-credentials")
