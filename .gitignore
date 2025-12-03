@@ -20,3 +20,5 @@ extraJars
 .vscode
 project/project
 project/target
+.metals
+metals.sbt
