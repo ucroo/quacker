@@ -6,7 +6,7 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
 
-addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.16")
+//addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.16")
 
 addSbtPlugin("net.vonbuchholtz" % "sbt-dependency-check" % "1.3.3")
 

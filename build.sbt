@@ -14,8 +14,6 @@ ThisBuild / evictionErrorLevel                               := Level.Info
 
 organization := "stackableRegiments"
 
-val apiRoot = "."
-
 lazy val root = (project in file("."))
   .enablePlugins(BuildInfoPlugin)
   .settings(
@@ -42,19 +40,6 @@ ThisBuild / scalafmtOnCompile := false
 reporterConfig := reporterConfig.value.withColumnNumbers(true)
 
 reporterConfig := reporterConfig.value.withShowLegend(true)
-
-//wartremoverErrors ++= Warts.unsafe
-
-wartremoverWarnings ++= Warts.all
-
-enablePlugins(JettyPlugin)
-
-containerArgs := Seq(
-  "--config",
-  "jetty.xml"
-)
-
-containerPort := 8444
 
 compileOrder := CompileOrder.ScalaThenJava
 
@@ -94,31 +79,32 @@ resolvers in ThisBuild ++= Seq(
 
 enablePlugins(JettyPlugin)
 
-containerArgs := Seq("--config", "jetty.xml")
-containerPort := 8444
 
 val jettyMem  = sys.env.get("SBT_JETTY_MEM").getOrElse("2048")
 val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
 
 Jetty / javaOptions ++= Seq(
-
-//  "-Dotel.exporter.otlp.protocol=grpc",
+//  Otel
+//  GCloud settings 
 //  "-Dotel.resource.providers.gcp.enabled=true",
+//  "-Dotel.traces.exporter=google_cloud_trace",
+//  "-Dotel.metrics.exporter=google_cloud_monitoring",
+//  "-javaagent:.kube/extraJars/opentelemetry-javaagent-2.12.0.jar",
+//  "-Dotel.javaagent.extensions=.kube/extraJars/exporter-auto-0.33.0-alpha-shaded.jar",
+
+
+//  local
+  "-Dotel.exporter.otlp.insecure=true",
+  "-Dotel.exporter.otlp.protocol=grpc",
+  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
+  s"-javaagent:${otelAgentJar.value}",
+
+    // Customize this 
   "-Dotel.service.name=local.quacker.pathify.com",
 
-      "-Dotel.traces.exporter=google_cloud_trace",
-    "-Dotel.metrics.exporter=google_cloud_monitoring",
-
-"-javaagent:.kube/extraJars/opentelemetry-javaagent-2.12.0.jar",
-    "-Dotel.javaagent.extensions=.kube/extraJars/exporter-auto-0.33.0-alpha-shaded.jar",
-
-//  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
+// common settings
   "-Dotel.javaagent.enabled=true",
-  "-Dotel.instrumentation.jetty.enabled=true",
-  "-Dotel.instrumentation.common.default-enabled=true",
-  "-Dotel.instrumentation.opentelemetry-api.enabled=true",
-  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true",
-
+  //Otel end
   "-Xmx%sM".format(jettyMem),
   "-Xms%sM".format(jettyMem),
   "-XX:ActiveProcessorCount=%s".format(jettyCpus),
@@ -135,23 +121,19 @@ Jetty / javaOptions ++= Seq(
   "-Djavax.net.ssl.keyStore=keystore.jks",
   "-Djavax.net.ssl.keyStorePassword=changeit",
   "-Dorg.eclipse.jetty.util.log.class=org.apache.logging.log4j.appserver.jetty.Log4j2Logger",
-  
-   "-Dquacker.configDirectoryLocation=monitoringDashboardConfig",
+  "-Dquacker.configDirectoryLocation=monitoringDashboardConfig",
   "-Dquacker.appConfigDirectoryLocation=appConf",
   "-Drun.mode=production",
   "-Dlogback.configurationFile=appConf/logback.xml",
-  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
-  s"-javaagent:${otelAgentJar.value}"
+  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider"
+
 )
 
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
-
 Jetty / containerPort := 8666
 Jetty / containerArgs := Seq("--config", "jetty.xml")
 
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
-
-  val logbackVersion = "1.5.21"
+ val logbackVersion = "1.5.21"
  val slf4jVersion = "2.0.17" 
  
 libraryDependencies in ThisBuild ++= {
