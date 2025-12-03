@@ -1,4 +1,8 @@
 #!/bin/sh
+
+
+export JAVA_HOME=/Users/jono/Library/Caches/Coursier/arc/https/github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%252B6/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.15_6.tar.gz/jdk-17.0.15+6/Contents/Home
+
 SCRIPT_DIR=`dirname $0`
 echo "Script dir: $SCRIPT_DIR"
 IVY_HOME=$HOME/.ivy2/
