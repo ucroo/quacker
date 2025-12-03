@@ -284,7 +284,12 @@ libraryDependencies in ThisBuild ++= {
     "org.pac4j" % "pac4j-oauth" % "1.7.0",
        /*Open telemetry*/
     "io.opentelemetry"              % "opentelemetry-api"       % otelVersion,
-    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime"
+    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime",
+    /* logback through google */
+    "com.google.cloud"                 % "google-cloud-logging"                          % "3.23.0",
+    "com.google.cloud"                 % "google-cloud-logging-logback"                  % "0.131.11-alpha",
+    "com.google.cloud"                 % "google-cloud-logging-servlet-initializer"      % "0.2.13-alpha",
+    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0"                 % "2.21.0-alpha"
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))

@@ -14,3 +14,4 @@ config/quacker*.xml
 null
 *.db
 .kube/envs
+extraJars
