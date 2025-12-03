@@ -177,8 +177,6 @@ abstract class Sensor(metadata: SensorMetaData)
 
   private lazy val _clazzName   = this.getClass().getName()
 	private lazy val init = GlobalOpenTelemetry.get()
-	private lazy val sensorErrorMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.failures").ofLongs().build()
-	private lazy val sensorSuccessMetric = init.getMeter(_clazzName).histogramBuilder("metl.model.sensor.sucesses").ofLongs().build()
 	private lazy val gaugeNumber = new AtomicLong(0)
 	private lazy val metricAttributes = 
 		Attributes
@@ -189,14 +187,11 @@ abstract class Sensor(metadata: SensorMetaData)
 		.build()
 	private val callback:Consumer[ObservableLongMeasurement] = new Consumer[ObservableLongMeasurement] {
 		override def accept(measurement: ObservableLongMeasurement): Unit = {
-			info(s"gauge callback for ${ metadata.name} ${gaugeNumber.get()}")
 			measurement.record(gaugeNumber.get(), metricAttributes)
 		}
 	}
 
 	private val gaugeSensor = init.getMeter(_clazzName).gaugeBuilder("metl.model.sensor.gauge").ofLongs().buildWithCallback(callback)
-
-	info(s"we have a gauge now $gaugeSensor using a callback to  record ${gaugeNumber.get()}")
 
   import GraphableData._
   override val serviceName: String = metadata.serviceName
@@ -268,8 +263,7 @@ abstract class Sensor(metadata: SensorMetaData)
                          severity,
                          success = false,
                          duration = checkDuration)
-    sensorErrorMetric.record(1,metricAttributes)
-		val _ =	gaugeNumber.decrementAndGet()
+		gaugeNumber.set(0)
     addCheckResult(cr, currentFailures >= failureTolerance)
   }
   def calculateCheckDuration(timeTaken: Box[Double] = Empty): Double = {
@@ -311,8 +305,7 @@ abstract class Sensor(metadata: SensorMetaData)
                          success = true,
                          data,
                          checkDuration)
-		sensorSuccessMetric.record(1,metricAttributes)
-		val _ = gaugeNumber.incrementAndGet()
+		gaugeNumber.set(1)
     addCheckResult(cr)
   }
   override protected def exceptionHandler: PartialFunction[Throwable, Unit] = {
