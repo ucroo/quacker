@@ -7,6 +7,7 @@
     <then>
       <appender name="CLOUD" class="com.google.cloud.logging.logback.LoggingAppender">
         <property name="projectId" value="${projectId:-${GOOGLE_CLOUD_PROJECT}}"/>
+        <resourceType>global</resourceType>
         <flushLevel>WARN</flushLevel>
       </appender>
 

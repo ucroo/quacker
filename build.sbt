@@ -102,7 +102,17 @@ val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
 
 Jetty / javaOptions ++= Seq(
 
-  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
+//  "-Dotel.exporter.otlp.protocol=grpc",
+//  "-Dotel.resource.providers.gcp.enabled=true",
+  "-Dotel.service.name=local.quacker.pathify.com",
+
+      "-Dotel.traces.exporter=google_cloud_trace",
+    "-Dotel.metrics.exporter=google_cloud_monitoring",
+
+"-javaagent:.kube/extraJars/opentelemetry-javaagent-2.12.0.jar",
+    "-Dotel.javaagent.extensions=.kube/extraJars/exporter-auto-0.33.0-alpha-shaded.jar",
+
+//  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
   "-Dotel.javaagent.enabled=true",
   "-Dotel.instrumentation.jetty.enabled=true",
   "-Dotel.instrumentation.common.default-enabled=true",
@@ -289,7 +299,7 @@ libraryDependencies in ThisBuild ++= {
     "com.google.cloud"                 % "google-cloud-logging"                          % "3.23.0",
     "com.google.cloud"                 % "google-cloud-logging-logback"                  % "0.131.11-alpha",
     "com.google.cloud"                 % "google-cloud-logging-servlet-initializer"      % "0.2.13-alpha",
-    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0"                 % "2.21.0-alpha"
+    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0"                 % "2.21.0-alpha",
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))
