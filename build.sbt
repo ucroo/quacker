@@ -58,6 +58,13 @@ containerPort := 8444
 
 compileOrder := CompileOrder.ScalaThenJava
 
+val otelAgentJar = Def.task {
+  (Runtime / managedClasspath).value
+    .find(_.data.getName.contains("opentelemetry-javaagent"))
+    .map(_.data.getAbsolutePath)
+    .getOrElse("")
+}
+
 javaOptions in Jetty ++= Seq(
   "-Djavax.net.ssl.keyStore=keystore.jks",
   "-Djavax.net.ssl.keyStorePassword=changeit",
@@ -94,6 +101,14 @@ val jettyMem  = sys.env.get("SBT_JETTY_MEM").getOrElse("2048")
 val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
 
 Jetty / javaOptions ++= Seq(
+
+  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
+  "-Dotel.javaagent.enabled=false",
+  "-Dotel.instrumentation.jetty.enabled=false",
+  "-Dotel.instrumentation.common.default-enabled=false",
+  "-Dotel.instrumentation.opentelemetry-api.enabled=false",
+  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=false",
+
   "-Xmx%sM".format(jettyMem),
   "-Xms%sM".format(jettyMem),
   "-XX:ActiveProcessorCount=%s".format(jettyCpus),
@@ -110,17 +125,31 @@ Jetty / javaOptions ++= Seq(
   "-Djavax.net.ssl.keyStore=keystore.jks",
   "-Djavax.net.ssl.keyStorePassword=changeit",
   "-Dorg.eclipse.jetty.util.log.class=org.apache.logging.log4j.appserver.jetty.Log4j2Logger",
-  """-Dlog4j.configurationFile=src/main/resources/log4j2.xml"""
+  
+   "-Dquacker.configDirectoryLocation=monitoringDashboardConfig",
+  "-Dquacker.appConfigDirectoryLocation=appConf",
+  "-Drun.mode=production",
+  "-Dlogback.configurationFile=appConf/logback.xml",
+  "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider",
+  s"-javaagent:${otelAgentJar.value}"
 )
 
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
 
+Jetty / containerPort := 8666
+Jetty / containerArgs := Seq("--config", "jetty.xml")
+
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.9"
 
+  val logbackVersion = "1.5.21"
+ val slf4jVersion = "2.0.17" 
+ 
 libraryDependencies in ThisBuild ++= {
   val liftVersion = "3.4.3"
   val shiroVersion = "1.2.2"
   val scalaTestVersion = "3.3.0-SNAP4"
+  val otelVersion = "1.56.0"
+  val otelAgentVersion = "2.22.0"
 
   Seq(
     "net.liftweb" %% "lift-webkit" % liftVersion,
@@ -252,7 +281,10 @@ libraryDependencies in ThisBuild ++= {
     /*Parsing*/
     "com.github.tototoshi" %% "scala-csv" % "1.3.6",
     /*OAuth authentication*/
-    "org.pac4j" % "pac4j-oauth" % "1.7.0"
+    "org.pac4j" % "pac4j-oauth" % "1.7.0",
+       /*Open telemetry*/
+    "io.opentelemetry"              % "opentelemetry-api"       % otelVersion,
+    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime"
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))
@@ -261,6 +293,12 @@ libraryDependencies in ThisBuild ++= {
     .exclude("com.sun.jmx", "jmxri")
     .exclude("log4j", "log4j")
 )
+
+libraryDependencies ++= Seq(
+"org.slf4j"        % "slf4j-api"                                % slf4jVersion,
+  "ch.qos.logback" % "logback-classic" % logbackVersion,
+    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
+  )
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:existentials",
