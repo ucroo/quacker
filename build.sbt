@@ -1,16 +1,16 @@
 versionWithGit
-git.baseVersion := "2.0"
+git.baseVersion    := "2.0"
 git.useGitDescribe := true
 
-name := "app.stackableregiments.quacker"
-version in ThisBuild := "develop"
+name                      := "app.stackableregiments.quacker"
+version in ThisBuild      := "develop"
 scalaVersion in ThisBuild := "2.12.15"
 
-val jettyVersion               = "11.0.23"
+val jettyVersion = "11.0.23"
 
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules"     %% "scala-xml" % VersionScheme.Always
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules_2.12" % "scala-xml" % VersionScheme.Always
-ThisBuild / evictionErrorLevel                               := Level.Info
+ThisBuild / evictionErrorLevel                                       := Level.Info
 
 organization := "stackableRegiments"
 
@@ -79,19 +79,17 @@ resolvers in ThisBuild ++= Seq(
 
 enablePlugins(JettyPlugin)
 
-
 val jettyMem  = sys.env.get("SBT_JETTY_MEM").getOrElse("2048")
 val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
 
 Jetty / javaOptions ++= Seq(
 //  Otel
-//  GCloud settings 
+//  GCloud settings
 //  "-Dotel.resource.providers.gcp.enabled=true",
 //  "-Dotel.traces.exporter=google_cloud_trace",
 //  "-Dotel.metrics.exporter=google_cloud_monitoring",
 //  "-javaagent:.kube/extraJars/opentelemetry-javaagent-2.12.0.jar",
 //  "-Dotel.javaagent.extensions=.kube/extraJars/exporter-auto-0.33.0-alpha-shaded.jar",
-
 
 //  local
   "-Dotel.exporter.otlp.insecure=true",
@@ -99,12 +97,12 @@ Jetty / javaOptions ++= Seq(
   "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
   s"-javaagent:${otelAgentJar.value}",
 
-    // Customize this 
+  // Customize this
   "-Dotel.service.name=local.quacker.pathify.com",
 
 // common settings
   "-Dotel.javaagent.enabled=true",
-  //Otel end
+  // Otel end
   "-Xmx%sM".format(jettyMem),
   "-Xms%sM".format(jettyMem),
   "-XX:ActiveProcessorCount=%s".format(jettyCpus),
@@ -126,50 +124,49 @@ Jetty / javaOptions ++= Seq(
   "-Drun.mode=production",
   "-Dlogback.configurationFile=appConf/logback.xml",
   "-Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider"
-
 )
 
 Jetty / containerLibs := Seq("org.eclipse.jetty" % "jetty-runner" % jettyVersion intransitive ())
 Jetty / containerPort := 8666
 Jetty / containerArgs := Seq("--config", "jetty.xml")
 
- val logbackVersion = "1.5.21"
- val slf4jVersion = "2.0.17" 
- 
+val logbackVersion = "1.5.21"
+val slf4jVersion   = "2.0.17"
+
 libraryDependencies in ThisBuild ++= {
-  val liftVersion = "3.4.3"
-  val shiroVersion = "1.2.2"
+  val liftVersion      = "3.4.3"
+  val shiroVersion     = "1.2.2"
   val scalaTestVersion = "3.3.0-SNAP4"
-  val otelVersion = "1.56.0"
+  val otelVersion      = "1.56.0"
   val otelAgentVersion = "2.22.0"
 
   Seq(
-    "net.liftweb" %% "lift-webkit" % liftVersion,
-    "net.liftweb" %% "lift-mapper" % liftVersion,
-    "ch.qos.logback" % "logback-classic" % "1.2.9",
-    "org.specs2" %% "specs2-core" % "3.9.4" % "test",
-    "com.h2database" % "h2" % "1.4.187",
-    "com.github.dakatsuka" %% "akka-http-oauth2-client" % "0.1.0",
-    "io.lemonlabs" %% "scala-uri" % "1.4.4",
-    "com.google.api-client" % "google-api-client" % "1.25.0",
-    "com.softwaremill.sttp" %% "core" % "1.5.0",
-    "com.softwaremill.sttp" %% "okhttp-backend" % "1.5.11",
-    "org.ekrich" %% "sconfig" % "0.8.0",
-    "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided",
-    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
-    "org.eclipse.jetty" % "jetty-server" % jettyVersion,
-    "org.eclipse.jetty" % "jetty-util"   % jettyVersion,
+    "net.liftweb"           %% "lift-webkit"             % liftVersion,
+    "net.liftweb"           %% "lift-mapper"             % liftVersion,
+    "ch.qos.logback"         % "logback-classic"         % "1.2.9",
+    "org.specs2"            %% "specs2-core"             % "3.9.4" % "test",
+    "com.h2database"         % "h2"                      % "1.4.187",
+    "com.github.dakatsuka"  %% "akka-http-oauth2-client" % "0.1.0",
+    "io.lemonlabs"          %% "scala-uri"               % "1.4.4",
+    "com.google.api-client"  % "google-api-client"       % "1.25.0",
+    "com.softwaremill.sttp" %% "core"                    % "1.5.0",
+    "com.softwaremill.sttp" %% "okhttp-backend"          % "1.5.11",
+    "org.ekrich"            %% "sconfig"                 % "0.8.0",
+    "javax.servlet"          % "javax.servlet-api"       % "3.0.1" % "provided",
+    "org.eclipse.jetty"      % "jetty-webapp"            % jettyVersion,
+    "org.eclipse.jetty"      % "jetty-server"            % jettyVersion,
+    "org.eclipse.jetty"      % "jetty-util"              % jettyVersion,
 //    "net.rcarz" % "jira-client" % "0.6.3-IHTSDO",
-    "javax.mail" % "javax.mail-api" % "1.6.2",
-    "com.sun.mail" % "javax.mail" % "1.6.2",
-    "com.hacklanta" %% "lift-formality_3.3" % "1.2.0",
-    "io.github.classgraph" % "classgraph" % "4.6.18",
-    "com.sksamuel.scrimage" % "scrimage-core" % "4.0.6",
-    "com.rklaehn" % "radixtree_2.12" % "0.5.1",
-    "com.joestelmach" % "natty" % "0.11",
-    //for resource loading
+    "javax.mail"            % "javax.mail-api"     % "1.6.2",
+    "com.sun.mail"          % "javax.mail"         % "1.6.2",
+    "com.hacklanta"        %% "lift-formality_3.3" % "1.2.0",
+    "io.github.classgraph"  % "classgraph"         % "4.6.18",
+    "com.sksamuel.scrimage" % "scrimage-core"      % "4.0.6",
+    "com.rklaehn"           % "radixtree_2.12"     % "0.5.1",
+    "com.joestelmach"       % "natty"              % "0.11",
+    // for resource loading
     "org.springframework" % "spring-core" % "5.1.5.RELEASE",
-    //for testing
+    // for testing
     "org.specs2"     %% "specs2-core"              % "3.9.5"          % Test,
     "org.scalatest"  %% "scalatest"                % scalaTestVersion % Test,
     "org.scalatest"  %% "scalatest-shouldmatchers" % scalaTestVersion % Test,
@@ -180,7 +177,7 @@ libraryDependencies in ThisBuild ++= {
     // for JWT encoding/decoding
     "com.pauldijou" %% "jwt-core" % "4.1.0",
     // for serialization into and out of the db
-    "com.twitter" %% "chill" % "0.9.5",
+    "com.twitter" %% "chill"          % "0.9.5",
     "com.twitter" %% "bijection-core" % "0.9.7",
     "com.twitter" %% "bijection-json" % "0.9.7",
     "com.twitter" %% "bijection-util" % "0.9.7",
@@ -197,16 +194,16 @@ libraryDependencies in ThisBuild ++= {
     // for google calendar
     "com.google.apis" % "google-api-services-calendar" % "v3-rev401-1.25.0",
     // for gmail
-    //"com.google.apis" % "google-api-services-gmail" % "v1-rev110-1.25.0",
-    //"com.google.apis" % "google-api-services-gmail" % "v1-rev110-1.25.0",
+    // "com.google.apis" % "google-api-services-gmail" % "v1-rev110-1.25.0",
+    // "com.google.apis" % "google-api-services-gmail" % "v1-rev110-1.25.0",
     "com.google.apis" % "google-api-services-gmail" % "v1-rev20200110-1.29.2",
     // for drive
     "com.google.apis" % "google-api-services-drive" % "v3-rev188-1.25.0",
     // for google analytics
-    "com.google.apis" % "google-api-services-analytics" % "v3-rev169-1.25.0",
+    "com.google.apis" % "google-api-services-analytics"          % "v3-rev169-1.25.0",
     "com.google.apis" % "google-api-services-analyticsreporting" % "v4-rev174-1.25.0",
     // for cloud sql
-    "com.google.cloud.sql" % "postgres-socket-factory" % "1.0.15",
+    "com.google.cloud.sql" % "postgres-socket-factory"            % "1.0.15",
     "com.google.cloud.sql" % "mysql-socket-factory-connector-j-8" % "1.0.15",
     // for parsing ical
     "net.sf.biweekly" % "biweekly" % "0.6.3",
@@ -224,11 +221,11 @@ libraryDependencies in ThisBuild ++= {
     "net.sourceforge.htmlunit" % "htmlunit" % "2.37.0",
     // for file type detection
     "org.apache.tika" % "tika-core" % "1.23",
-    //for apache commons dbcp db connection pooling
+    // for apache commons dbcp db connection pooling
     "org.apache.commons" % "commons-dbcp2" % "2.7.0",
-    //for SAML
+    // for SAML
     "org.opensaml" % "opensaml" % "2.6.4",
-    "javax.xml" % "jaxb-api" % "2.1",
+    "javax.xml"    % "jaxb-api" % "2.1",
     /*telnet & munin*/
     "commons-net" % "commons-net" % "2.0",
     /*snmp*/
@@ -240,48 +237,48 @@ libraryDependencies in ThisBuild ++= {
     /*subversion*/
     "org.tmatesoft.svnkit" % "svnkit" % "1.3.4",
     /*general*/
-    "commons-io" % "commons-io" % "1.4",
+    "commons-io"    % "commons-io"    % "1.4",
     "commons-codec" % "commons-codec" % "1.9",
     /*http*/
-    //"org.apache.httpcomponents" % "httpcore" % "4.1.2",
-    "org.apache.httpcomponents" % "httpcore" % "4.4.15",
-		"org.apache.httpcomponents.core5" % "httpcore5" % "5.1.1",
-		"org.apache.httpcomponents.client5" % "httpclient5" % "5.1.2",
+    // "org.apache.httpcomponents" % "httpcore" % "4.1.2",
+    "org.apache.httpcomponents"         % "httpcore"    % "4.4.15",
+    "org.apache.httpcomponents.core5"   % "httpcore5"   % "5.1.1",
+    "org.apache.httpcomponents.client5" % "httpclient5" % "5.1.2",
     /*memcached*/
-    //"spy" % "spymemcached" % "2.6",
+    // "spy" % "spymemcached" % "2.6",
     "net.spy" % "spymemcached" % "2.12.1",
     /*h2*/
     "com.h2database" % "h2" % "1.4.187",
     /*xmpp*/
-    "jivesoftware" % "smack" % "3.1.0",
+    "jivesoftware" % "smack"  % "3.1.0",
     "jivesoftware" % "smackx" % "3.1.0",
     /*samba*/
     "jcifs" % "jcifs" % "1.3.17",
     /*Security stack*/
     "org.apache.shiro" % "shiro-core" % shiroVersion,
-    "org.apache.shiro" % "shiro-cas" % shiroVersion,
-    "org.apache.shiro" % "shiro-web" % shiroVersion,
+    "org.apache.shiro" % "shiro-cas"  % shiroVersion,
+    "org.apache.shiro" % "shiro-web"  % shiroVersion,
     /*Testing*/
     "org.specs2" % "specs2-cats_2.12" % "4.10.2" % "test",
-    "org.specs2" % "specs2_2.12" % "3.8.9" % "test",
-    //mongo-lift
-    "com.mongodb.casbah" % "casbah_2.9.1" % "2.1.5-1",
-    "net.liftweb" %% "lift-mongodb" % liftVersion,
-    "net.liftweb" %% "lift-mongodb-record" % liftVersion,
+    "org.specs2" % "specs2_2.12"      % "3.8.9"  % "test",
+    // mongo-lift
+    "com.mongodb.casbah" % "casbah_2.9.1"        % "2.1.5-1",
+    "net.liftweb"       %% "lift-mongodb"        % liftVersion,
+    "net.liftweb"       %% "lift-mongodb-record" % liftVersion,
     /*Http management*/
     "net.databinder.dispatch" %% "dispatch-core" % "0.13.+",
     /*Parsing*/
     "com.github.tototoshi" %% "scala-csv" % "1.3.6",
     /*OAuth authentication*/
     "org.pac4j" % "pac4j-oauth" % "1.7.0",
-       /*Open telemetry*/
-    "io.opentelemetry"              % "opentelemetry-api"       % otelVersion,
-    "io.opentelemetry.javaagent"    % "opentelemetry-javaagent" % otelAgentVersion %  "runtime",
+    /*Open telemetry*/
+    "io.opentelemetry"           % "opentelemetry-api"       % otelVersion,
+    "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % otelAgentVersion % "runtime",
     /* logback through google */
-    "com.google.cloud"                 % "google-cloud-logging"                          % "3.23.0",
-    "com.google.cloud"                 % "google-cloud-logging-logback"                  % "0.131.11-alpha",
-    "com.google.cloud"                 % "google-cloud-logging-servlet-initializer"      % "0.2.13-alpha",
-    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0"                 % "2.21.0-alpha",
+    "com.google.cloud"                 % "google-cloud-logging"                     % "3.23.0",
+    "com.google.cloud"                 % "google-cloud-logging-logback"             % "0.131.11-alpha",
+    "com.google.cloud"                 % "google-cloud-logging-servlet-initializer" % "0.2.13-alpha",
+    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0"            % "2.21.0-alpha"
   )
 }.map(
   _.excludeAll(ExclusionRule(organization = "org.slf4j"))
@@ -292,10 +289,10 @@ libraryDependencies in ThisBuild ++= {
 )
 
 libraryDependencies ++= Seq(
-"org.slf4j"        % "slf4j-api"                                % slf4jVersion,
-  "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
-  )
+  "org.slf4j"                        % "slf4j-api"                     % slf4jVersion,
+  "ch.qos.logback"                   % "logback-classic"               % logbackVersion,
+  "io.opentelemetry.instrumentation" % "opentelemetry-logback-mdc-1.0" % "2.21.0-alpha"
+)
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:existentials",
@@ -323,7 +320,6 @@ scalacOptions in ThisBuild ++= Seq(
 
 // set Ivy logging to be at the highest level
 ivyLoggingLevel := UpdateLogging.Full
-
 
 // disable updating dynamic revisions (including -SNAPSHOT versions)
 offline := false
