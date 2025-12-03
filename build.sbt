@@ -103,11 +103,11 @@ val jettyCpus = sys.env.get("SBT_JETTY_CPUS").getOrElse("4")
 Jetty / javaOptions ++= Seq(
 
   "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
-  "-Dotel.javaagent.enabled=false",
-  "-Dotel.instrumentation.jetty.enabled=false",
-  "-Dotel.instrumentation.common.default-enabled=false",
-  "-Dotel.instrumentation.opentelemetry-api.enabled=false",
-  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=false",
+  "-Dotel.javaagent.enabled=true",
+  "-Dotel.instrumentation.jetty.enabled=true",
+  "-Dotel.instrumentation.common.default-enabled=true",
+  "-Dotel.instrumentation.opentelemetry-api.enabled=true",
+  "-Dotel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true",
 
   "-Xmx%sM".format(jettyMem),
   "-Xms%sM".format(jettyMem),
