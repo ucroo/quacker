@@ -14,3 +14,13 @@ config/quacker*.xml
 null
 *.db
 .kube/envs
+extraJars
+.bloop
+.bsp
+.vscode
+project/project
+project/target
+.metals
+metals.sbt
+
+.kube/root.war

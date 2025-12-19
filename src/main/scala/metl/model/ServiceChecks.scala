@@ -15,6 +15,12 @@ import java.util.Date
 
 import net.liftweb.common.Logger
 
+import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.common.Attributes
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
+
 case class DashboardException(reason: String,
                               detail: String,
                               exceptions: List[Exception] = Nil)
@@ -168,6 +174,25 @@ abstract class Sensor(metadata: SensorMetaData)
     with VisualElement
     with metl.comet.CheckRenderHelper
     with Logger {
+
+  private lazy val _clazzName   = this.getClass().getName()
+	private lazy val init = GlobalOpenTelemetry.get()
+	private lazy val gaugeNumber = new AtomicLong(0)
+	private lazy val metricAttributes = 
+		Attributes
+		.builder()
+		.put("name", metadata.name)
+		.put("serviceName", metadata.serviceName)
+		.put("serviceLabel", metadata.serviceLabel)
+		.build()
+	private val callback:Consumer[ObservableLongMeasurement] = new Consumer[ObservableLongMeasurement] {
+		override def accept(measurement: ObservableLongMeasurement): Unit = {
+			measurement.record(gaugeNumber.get(), metricAttributes)
+		}
+	}
+
+	private val gaugeSensor = init.getMeter(_clazzName).gaugeBuilder("metl.model.sensor.gauge").ofLongs().buildWithCallback(callback)
+
   import GraphableData._
   override val serviceName: String = metadata.serviceName
   override val serviceLabel: String = metadata.serviceLabel
@@ -238,6 +263,7 @@ abstract class Sensor(metadata: SensorMetaData)
                          severity,
                          success = false,
                          duration = checkDuration)
+		gaugeNumber.set(0)
     addCheckResult(cr, currentFailures >= failureTolerance)
   }
   def calculateCheckDuration(timeTaken: Box[Double] = Empty): Double = {
@@ -279,6 +305,7 @@ abstract class Sensor(metadata: SensorMetaData)
                          success = true,
                          data,
                          checkDuration)
+		gaugeNumber.set(1)
     addCheckResult(cr)
   }
   override protected def exceptionHandler: PartialFunction[Throwable, Unit] = {
