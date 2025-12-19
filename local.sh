@@ -14,12 +14,18 @@ if [[ "$*" == *"--compile"* ]]; then
 
 fi
 
-mkdir -p webapps
-cp target/scala-2.1*/*.war webapps/quacker.war
-
 if docker ps -a --format '{{.Names}}' | grep -q '^quacker$'; then
     docker rm -f quacker
 fi
 
+cp target/scala-2.1*/*.war ./.kube/root.war
+
+cd .kube
 docker build -t quacker .
-docker run -d -p 8666:8666 --name quacker -it quacker 
+cd ..
+docker run -d -p 8666:8080 \
+    -v "$(pwd)/appConf:/var/appConf:ro" \
+    -v "$(pwd)/monitoringDashboardConfig:/var/monitoringDashboardConfig:ro" \
+    -e "QUACKER_APP_CONFIG_DIRECTORY_LOCATION=/var/appConf"  \
+    -e "QUACKER_CONFIG_DIRECTORY_LOCATION=/var/monitoringDashboardConfig"  \
+    --name quacker -it quacker 

@@ -22,3 +22,5 @@ project/project
 project/target
 .metals
 metals.sbt
+
+.kube/root.war

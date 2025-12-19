@@ -94,7 +94,7 @@ Jetty / javaOptions ++= Seq(
 //  local
   "-Dotel.exporter.otlp.insecure=true",
   "-Dotel.exporter.otlp.protocol=grpc",
-  "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
+  // "-Dotel.exporter.otlp.endpoint=http://collector.localhost:4317",
   s"-javaagent:${otelAgentJar.value}",
 
   // Customize this
